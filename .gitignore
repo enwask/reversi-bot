@@ -1,0 +1,6 @@
+# Executable + build cache
+reversi
+cmake-build-debug/
+
+# Misc
+**.DS_STORE
