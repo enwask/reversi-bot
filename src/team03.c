@@ -15,7 +15,7 @@ position *team03Move(const enum piece board[][SIZE], enum piece mine, int second
     int col = (mine == WHITE);
     
     // Perform the move with our own state format
-    position pos = team03_getMove(state, col, secondsleft);
+    pos_t pos = team03_getMove(state, col, secondsleft);
     
     // Dynamically allocate the return position
     position *res = malloc(sizeof(position));
@@ -158,9 +158,7 @@ int team03_equals(board_t state, pos_t pos1, pos_t pos2) {
  * @param col the color of the piece to check moves for
  * @return 1 if there is at least one move for this color; 0 otherwise
  */
-int team03_canMove(board_t state, int col) {
-
-}
+int team03_canMove(board_t state, int col);
 
 /**
  * Checks if the game is over (i.e. neither color has a move they
@@ -178,7 +176,7 @@ int team03_isGameOver(board_t state);
  * @param num output pointer for the array size
  * @return a pointer to the (dynamically allocated!) result array
  */
-position *team03_getMoves(board_t state, int col, int *num);
+pos_t *team03_getMoves(board_t state, int col, int *num);
 
 /**
  * Checks if the given move is valid on the current board state.
@@ -282,7 +280,7 @@ void team03_setBit(int64_t *mask, uint8_t ind, int value) {
  * @return the number of bits that are on in `num`
  */
 uint8_t team03_popcount(int64_t num) {
-#ifdef SOMETHING_THAT_ISNT_DEFINED// __has_builtin
+#ifdef __has_builtin
 #if __has_builtin(__builtin_popcount)
 #define popcount(x) __builtin_popcount(x)
 #endif // has_builtin
@@ -294,8 +292,8 @@ uint8_t team03_popcount(int64_t num) {
 #else
     // Otherwise we do it manually
     // https://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetKernighan
-    uint8_t res;
-    for (res = 0; num; res++) num &= num - 1;
+    uint8_t res = 0;
+    for (; num; res++) num &= num - 1;
     return res;
 #endif
 }

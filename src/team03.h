@@ -14,7 +14,7 @@
  * <br/><br/>
  *
  * The first integer stores, for every cell, whether there is a piece in the
- * cell at that index (0-64 from top to bottom, left to right).
+ * cell at that index (0-63 from top to bottom, left to right).
  *
  * The second integer stores, for each cell with a piece in it, the color of
  * that cell. The bits at any other (empty) positions are meaningless.
@@ -35,8 +35,9 @@ typedef struct board {
 } board_t;
 
 /**
- * Lightweight position struct (position pointers are ugly)
+ * Lightweight position struct (position pointers are ugly).
  * Also row before col is easier to use in a lot of the function contexts
+ * so functions using pos_t (like makePos) use this order too.
  */
 typedef struct pos {
     int8_t y, x;
@@ -128,7 +129,7 @@ int team03_isGameOver(board_t state);
  * @param num output pointer for the array size
  * @return a pointer to the (dynamically allocated!) result array
  */
-position *team03_getMoves(board_t state, int col, int *num);
+pos_t *team03_getMoves(board_t state, int col, int *num);
 
 /**
  * Checks if the given move is valid on the current board state.
