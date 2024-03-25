@@ -9,6 +9,13 @@
 #include <stdlib.h>
 #include "../framework/reversi_functions.h"
 
+
+/*
+ **********************
+ * Data types         *
+ **********************
+ */
+
 /**
  * Fast board data type.
  * <br/><br/>
@@ -43,6 +50,13 @@ typedef struct pos {
     int8_t y, x;
 } pos_t;
 
+
+/*
+ **********************
+ * Game interface     *
+ **********************
+ */
+
 /**
  * Performs a move for our team. Defers to `getMove`.
  * @param board the (slow/default) board state, which we'll load to our board type
@@ -60,6 +74,13 @@ position *team03Move(const enum piece board[][SIZE], enum piece mine, int second
  * @return the position we placed a piece at
  */
 pos_t team03_getMove(board_t state, int col, int time);
+
+
+/*
+ **********************
+ * Board state utils  *
+ **********************
+ */
 
 /**
  * Loads the default/slow board state into our board data type.
@@ -103,6 +124,36 @@ int team03_count(board_t state, int col);
  * @return 1 if the cells have the same state; 0 otherwise.
  */
 int team03_equals(board_t state, pos_t pos1, pos_t pos2);
+
+
+/*
+ **********************
+ * Position utilities *
+ **********************
+ */
+
+/**
+ * Creates a pos_t instance from y and x positions.
+ * @param y the y position
+ * @param x the x position
+ * @return
+ */
+pos_t team03_makePos(int8_t y, int8_t x);
+
+/**
+ * Gets the flat bit index for the given position.
+ * @param pos the position
+ * @return an integer in [0, 63]: the index of the bit corresponding
+ * to the given position
+ */
+uint8_t team03_getPosIndex(pos_t pos);
+
+
+/*
+ **********************
+ * Game logic         *
+ **********************
+ */
 
 /**
  * Checks whether the given piece color can be played anywhere on
@@ -161,37 +212,17 @@ void team03_executeMove(board_t *state, pos_t pos, int col);
 
 /**
  * Flips the pieces between the provided start and end positions, inclusive.
- * <br/><br/>
- * Defers to `team03_doFlip`
  * @param state the board state to update
  * @param start the start position of the run to flip
  * @param end the end position of the run to flip
  */
 void team03_flip(board_t *state, pos_t start, pos_t end);
 
-/**
- * Flips the pieces between the start and end indices, inclusive.
- * @param state the board state to update
- * @param start the start index of the run to flip
- * @param end the end index of the run to flip
+/*
+ **********************
+ * Bit manipulation   *
+ **********************
  */
-void team03_doFlip(board_t *state, uint8_t start, uint8_t end);
-
-/**
- * Creates a pos_t instance from y and x positions.
- * @param y the y position
- * @param x the x position
- * @return
- */
-pos_t team03_makePos(int8_t y, int8_t x);
-
-/**
- * Gets the flat bit index for the given position.
- * @param pos the position
- * @return an integer in [0, 63]: the index of the bit corresponding
- * to the given position
- */
-uint8_t team03_getPosIndex(pos_t pos);
 
 /**
  * Gets the flat bit index for the given y/x indices.

@@ -2,6 +2,13 @@
 #include <stdlib.h>
 #include "team03.h"
 
+
+/*
+ **********************
+ * Game interface     *
+ **********************
+ */
+
 /**
  * Performs a move for our team. Defers to `getMove`.
  * @param board the (slow/default) board state, which we'll load to our board type
@@ -37,6 +44,13 @@ pos_t team03_getMove(board_t state, int col, int time) {
     printf("\nBlack has %d pieces\nWhite has %d pieces\n\n", team03_count(state, 0), team03_count(state, 1));
     return team03_makePos(0, 0);
 }
+
+
+/*
+ **********************
+ * Board state utils  *
+ **********************
+ */
 
 /**
  * Loads the default/slow board state into our board data type.
@@ -151,6 +165,42 @@ int team03_equals(board_t state, pos_t pos1, pos_t pos2) {
            team03_getColor(state, pos1);
 }
 
+
+/*
+ **********************
+ * Position utilities *
+ **********************
+ */
+
+/**
+ * Creates a pos_t instance from y and x positions.
+ * @param y the y position
+ * @param x the x position
+ * @return
+ */
+pos_t team03_makePos(int8_t y, int8_t x) {
+    pos_t res;
+    res.y = y, res.x = x;
+    return res;
+}
+
+/**
+ * Gets the flat bit index for the given position.
+ * @param pos the position
+ * @return an integer in [0, 63]; the index of the bit corresponding
+ * to the given position
+ */
+uint8_t team03_getPosIndex(pos_t pos) {
+    return team03_getIndex(pos.y, pos.x);
+}
+
+
+/*
+ **********************
+ * Game logic         *
+ **********************
+ */
+
 /**
  * Checks whether the given piece color can be played anywhere on
  * the board.
@@ -208,40 +258,18 @@ void team03_executeMove(board_t *state, pos_t pos, int col);
 
 /**
  * Flips the pieces between the provided start and end positions, inclusive.
- * Defers to `team03_doFlip`
  * @param state the board state to update
  * @param start the start position of the run to flip
  * @param end the end position of the run to flip
  */
 void team03_flip(board_t *state, pos_t start, pos_t end);
 
-/**
- * Flips the pieces between the start and end indices, inclusive.
- * @param state the board state to update
- * @param start the start index of the run to flip
- * @param end the end index of the run to flip
- */
-void team03_doFlip(board_t *state, uint8_t start, uint8_t end);
 
-/**
- * Creates a pos_t instance from y and x positions.
- * @param y the y position
- * @param x the x position
- * @return
+/*
+ **********************
+ * Bit manipulation   *
+ **********************
  */
-pos_t team03_makePos(int8_t y, int8_t x) {
-    pos_t res;
-    res.y = y, res.x = x;
-    return res;
-}
-
-/**
- * Gets the flat bit index for the given position.
- * @param pos the position
- * @return an integer in [0, 63]; the index of the bit corresponding
- * to the given position
- */
-uint8_t team03_getPosIndex(pos_t pos) { return team03_getIndex(pos.y, pos.x); }
 
 /**
  * Gets the flat bit index for the given y/x indices.
