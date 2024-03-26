@@ -88,7 +88,7 @@ board_t team03_loadBoard(const enum piece board[][SIZE]) {
  */
 uint64_t team03_getPieces(board_t state, int col) {
     // Compute a mask for the requested color
-    int64_t color_mask = col ? state.color : ~state.color;
+    uint64_t color_mask = col ? state.color : ~state.color;
     return state.on & color_mask; // filter placed pieces by the color
 }
 
@@ -99,7 +99,7 @@ uint64_t team03_getPieces(board_t state, int col) {
  * @return 1 if there is a piece at the given position; otherwise 0
  */
 int team03_getPiece(board_t state, pos_t pos) {
-    int8_t ind = team03_getPosIndex(pos);
+    uint8_t ind = team03_getPosIndex(pos);
     return team03_getBit(state.on, ind);
 }
 
@@ -111,7 +111,7 @@ int team03_getPiece(board_t state, pos_t pos) {
  * @return the color of the piece at the given position (0/1 for black/white)
  */
 int team03_getColor(board_t state, pos_t pos) {
-    int8_t ind = team03_getPosIndex(pos);
+    uint8_t ind = team03_getPosIndex(pos);
     return team03_getBit(state.color, ind);
 }
 
@@ -187,7 +187,7 @@ int team03_equals(board_t state, pos_t pos1, pos_t pos2) {
  * @param x the x position
  * @return
  */
-pos_t team03_makePos(int8_t y, int8_t x) {
+pos_t team03_makePos(uint8_t y, uint8_t x) {
     pos_t res;
     res.y = y, res.x = x;
     return res;
@@ -210,6 +210,63 @@ int team03_inBounds(pos_t pos) {
  */
 uint8_t team03_getPosIndex(pos_t pos) {
     return team03_getIndex(pos.y, pos.x);
+}
+
+/**
+ * Computes a bitmask for the move between start and end, inclusive.
+ * Assumes they are on the same horizontal, vertical or diagonal axis.
+ * @param start the start position of the range
+ * @param end the end position of the range
+ * @return a mask with the bits in the described range asserted
+ */
+uint64_t team03_getMoveMask(pos_t start, pos_t end) {
+    // TODO: I think this code works but worth more testing
+    // Smaller index first for ease of use
+    if (start.y > end.y || (start.y == end.y && start.x > end.x)) {
+        pos_t tmp = start;
+        start = end, end = tmp;
+    }
+    
+    // Convert positions to bit indices
+    uint8_t u = team03_getPosIndex(start);
+    uint8_t v = team03_getPosIndex(end);
+    
+    // Horizontal range
+    if (start.y == end.y) {
+        // All the bits we need to flip are contiguous
+        return team03_rangeMask(u, v);
+    }
+    
+    // Vertical range
+    if (start.x == end.x) {
+        // Mask with all bits in the target column
+        uint64_t mask = 0x0101010101010101ull << start.x;
+        return mask & team03_rangeMask(u, v); // restrict the flipped range
+    }
+    
+    // Diagonal range
+    
+    // Main diagonal template masks
+    const uint64_t main = 0x8040201008040201ull; // southeast
+    const uint64_t anti = 0x0102040810204080ull; // northeast
+    
+    // Aligned with the main diagonal
+    if (start.x < end.x) {
+        // Shift the main diagonal
+        signed dif = (signed) start.y - start.x;
+        uint64_t mask = (dif >= 0) ? (main >> dif) : (main << -dif);
+        
+        // Restrict the range
+        return mask & team03_rangeMask(u, v);
+    }
+    
+    // Aligned with the anti-diagonal
+    // Shift the template mask
+    signed dif = (signed) start.x + start.y - 7;
+    uint64_t mask = (dif >= 0) ? (anti << dif) : (anti >> -dif);
+    
+    // Restrict the range
+    return mask & team03_rangeMask(u, v);
 }
 
 
@@ -281,63 +338,30 @@ void team03_executeMove(board_t *state, pos_t pos, int col);
  * @param start the start position of the run to flip
  * @param end the end position of the run to flip
  */
-void team03_flip(board_t *state, pos_t start, pos_t end) {
-    // TODO: I think this works but worth more testing
-    // Smaller index first for ease of use
-    if (start.y > end.y || (start.y == end.y && start.x > end.x)) {
-        pos_t tmp = start;
-        start = end, end = tmp;
-    }
+void team03_flipPieces(board_t *state, pos_t start, pos_t end) {
+    // Compute a mask for the bits between start and end
+    uint64_t mask = team03_getMoveMask(start, end);
+    state->color ^= mask; // flip the bits in range
+}
+
+/**
+ * Sets the pieces between the provided start and end positions, inclusive,
+ * to the desired color. Also places pieces if any cells in range are empty.
+ * @param state the board state to update
+ * @param start the start position of the run to set
+ * @param end the end position of the run to set
+ * @param col the color to set the pieces to
+ */
+void team03_setPieces(board_t *state, pos_t start, pos_t end, int col) {
+    // Compute a mask for the bits between start and end
+    uint64_t mask = team03_getMoveMask(start, end);
     
-    // Convert positions to bit indices
-    uint8_t u = team03_getPosIndex(start);
-    uint8_t v = team03_getPosIndex(end);
+    // Place pieces where they're missing
+    state->on |= mask;
     
-    // Horizontal flip
-    if (start.y == end.y) {
-        // All the bits we need to flip are contiguous
-        uint64_t mask = team03_rangeMask(u, v);
-        state->color ^= mask; // invert the piece colors
-        return;
-    }
-    
-    // Vertical flip
-    if (start.x == end.x) {
-        // Mask with all bits in the target column
-        uint64_t mask = 0x0101010101010101ull << start.x;
-        mask &= team03_rangeMask(u, v); // restrict range
-        
-        // Invert the piece colors
-        state->color ^= mask;
-        return;
-    }
-    
-    // Diagonal flip :(
-    
-    // Main diagonal template masks
-    const uint64_t main = 0x8040201008040201ull; // southeast
-    const uint64_t anti = 0x0102040810204080ull; // northeast
-    
-    // Aligned with the main diagonal
-    if (start.x < end.x) {
-        // Shift the main diagonal
-        signed dif = (signed) start.y - start.x;
-        uint64_t mask = (dif >= 0) ? (main >> dif) : (main << -dif);
-        
-        // Restrict to flip range & do the thing
-        mask &= team03_rangeMask(u, v);
-        state->color ^= mask; // invert the piece colors
-        return;
-    }
-    
-    // Aligned with the anti-diagonal
-    // Shift the template mask
-    signed dif = (signed) start.x + start.y - 7;
-    uint64_t mask = (dif >= 0) ? (anti << dif) : (anti >> -dif);
-    
-    // Restrict to flip range and invert the piece colors
-    mask &= team03_rangeMask(u, v);
-    state->color ^= mask;
+    // Set the piece colors
+    if (col) state->color |= mask;
+    else state->color &= ~mask;
 }
 
 
@@ -360,7 +384,7 @@ uint8_t team03_getIndex(uint8_t y, uint8_t x) { return y * 8 + x; }
  * @param ind the index to check in the integer
  * @return 1 if the bit at the given index is on; 0 otherwise.
  */
-int team03_getBit(int64_t mask, uint8_t ind) {
+int team03_getBit(uint64_t mask, uint8_t ind) {
     uint64_t check = ((uint64_t) 1) << ind;
     return (mask & check) != 0;
 }
@@ -371,7 +395,7 @@ int team03_getBit(int64_t mask, uint8_t ind) {
  * @param ind the index of the bit to modify
  * @param value 0 to set the bit off; any other value to set it on
  */
-void team03_setBit(int64_t *mask, uint8_t ind, int value) {
+void team03_setBit(uint64_t *mask, uint8_t ind, int value) {
     uint64_t set = ((uint64_t) 1) << ind;
     
     if (value) *mask |= set;
@@ -384,7 +408,7 @@ void team03_setBit(int64_t *mask, uint8_t ind, int value) {
  * @param offset the (inclusive) end of the range to assert
  * @return the described mask
  */
-int64_t team03_rangeMask(uint8_t start, uint8_t end) {
+uint64_t team03_rangeMask(uint8_t start, uint8_t end) {
     uint64_t mask = 1ull << (end - start);
     mask <<= 1, mask--;
     return mask << start;
@@ -395,7 +419,7 @@ int64_t team03_rangeMask(uint8_t start, uint8_t end) {
  * @param num the integer
  * @return the number of bits that are on in `num`
  */
-uint8_t team03_popcount(int64_t num) {
+uint8_t team03_popcount(uint64_t num) {
 #ifdef __has_builtin
 #if __has_builtin(__builtin_popcount)
 #define popcount(x) __builtin_popcount(x)

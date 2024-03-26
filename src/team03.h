@@ -38,7 +38,7 @@
  * overhead.
  */
 typedef struct board {
-    int64_t on, color;
+    uint64_t on, color;
 } board_t;
 
 /**
@@ -47,7 +47,7 @@ typedef struct board {
  * so functions using pos_t (like makePos) use this order too.
  */
 typedef struct pos {
-    int8_t y, x;
+    uint8_t y, x;
 } pos_t;
 
 
@@ -147,7 +147,7 @@ int team03_equals(board_t state, pos_t pos1, pos_t pos2);
  * @param x the x position
  * @return
  */
-pos_t team03_makePos(int8_t y, int8_t x);
+pos_t team03_makePos(uint8_t y, uint8_t x);
 
 /**
  * Checks whether the position is within the bounds of the board.
@@ -163,6 +163,15 @@ int team03_inBounds(pos_t pos);
  * to the given position
  */
 uint8_t team03_getPosIndex(pos_t pos);
+
+/**
+ * Computes a bitmask for the move between start and end, inclusive.
+ * Assumes they are on the same horizontal, vertical or diagonal axis.
+ * @param start the start position of the range
+ * @param end the end position of the range
+ * @return a mask with the bits in the described range asserted
+ */
+uint64_t team03_getMoveMask(pos_t start, pos_t end);
 
 
 /*
@@ -233,7 +242,18 @@ void team03_executeMove(board_t *state, pos_t pos, int col);
  * @param start the start position of the run to flip
  * @param end the end position of the run to flip
  */
-void team03_flip(board_t *state, pos_t start, pos_t end);
+void team03_flipPieces(board_t *state, pos_t start, pos_t end);
+
+/**
+ * Sets the pieces between the provided start and end positions, inclusive,
+ * to the desired color. Also places pieces if any cells in range are empty.
+ * @param state the board state to update
+ * @param start the start position of the run to set
+ * @param end the end position of the run to set
+ * @param col the color to set the pieces to
+ */
+void team03_setPieces(board_t *state, pos_t start, pos_t end, int col);
+
 
 /*
  **********************
@@ -254,7 +274,7 @@ uint8_t team03_getIndex(uint8_t y, uint8_t x);
  * @param ind the index to check in the integer
  * @return 1 if the bit at the given index is on; 0 otherwise.
  */
-int team03_getBit(int64_t mask, uint8_t ind);
+int team03_getBit(uint64_t mask, uint8_t ind);
 
 /**
  * Sets the bit at the given index to the given value.
@@ -262,7 +282,7 @@ int team03_getBit(int64_t mask, uint8_t ind);
  * @param ind the index of the bit to modify
  * @param value 0 to set the bit off; any other value to set it on
  */
-void team03_setBit(int64_t *mask, uint8_t ind, int value);
+void team03_setBit(uint64_t *mask, uint8_t ind, int value);
 
 /**
  * Creates a mask with a range of bits between `start` and `end` asserted.
@@ -270,13 +290,13 @@ void team03_setBit(int64_t *mask, uint8_t ind, int value);
  * @param offset the (inclusive) end of the range to assert
  * @return the described mask
  */
-int64_t team03_rangeMask(uint8_t start, uint8_t end);
+uint64_t team03_rangeMask(uint8_t start, uint8_t end);
 
 /**
  * Counts the number of set bits in the given integer.
  * @param num the integer
  * @return the number of bits that are on in `num`
  */
-uint8_t team03_popcount(int64_t num);
+uint8_t team03_popcount(uint64_t num);
 
 #endif // TEAM03_H
