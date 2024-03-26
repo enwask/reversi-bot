@@ -80,42 +80,6 @@ board_t team03_loadBoard(const enum piece board[][SIZE]) {
 }
 
 /**
- * Returns a mask containing on bits in every position where there
- * is a piece of the given color.
- * @param state the board state to check
- * @param col the piece color to look for
- * @return the described mask
- */
-uint64_t team03_getPieces(board_t state, int col) {
-    // Compute a mask for the requested color
-    uint64_t color_mask = col ? state.color : ~state.color;
-    return state.on & color_mask; // filter placed pieces by the color
-}
-
-/**
- * Checks if there is a piece of any color at the given position.
- * @param state the board state
- * @param pos the position to check
- * @return 1 if there is a piece at the given position; otherwise 0
- */
-int team03_getPiece(board_t state, pos_t pos) {
-    uint8_t ind = team03_getPosIndex(pos);
-    return team03_getBit(state.on, ind);
-}
-
-/**
- * Gets the color of a piece at the given position. If there is no
- * piece at that position, the returned value is indeterminate.
- * @param state the current board state
- * @param pos the position to look at
- * @return the color of the piece at the given position (0/1 for black/white)
- */
-int team03_getColor(board_t state, pos_t pos) {
-    uint8_t ind = team03_getPosIndex(pos);
-    return team03_getBit(state.color, ind);
-}
-
-/**
  * Prints the state of the board.
  * @param state the board state
  */
@@ -145,6 +109,53 @@ void team03_print(board_t state) {
         printf("\n"); // end of this row
     }
     printf("\n"); // padding
+}
+
+/**
+ * Returns a mask containing on bits in every position where there
+ * is a piece of the given color.
+ * @param state the board state to check
+ * @param col the piece color to look for
+ * @return the described mask
+ */
+uint64_t team03_getPieces(board_t state, int col) {
+    // Compute a mask for the requested color
+    uint64_t color_mask = col ? state.color : ~state.color;
+    return state.on & color_mask; // filter placed pieces by the color
+}
+
+/**
+ * Checks if there is a piece of any color at the given position.
+ * @param state the board state
+ * @param pos the position to check
+ * @return 1 if there is a piece at the given position; otherwise 0
+ */
+int team03_getPiece(board_t state, pos_t pos) {
+    uint8_t ind = team03_getIndexPos(pos);
+    return team03_getBit(state.on, ind);
+}
+
+/**
+ * Gets the color of a piece at the given position. If there is no
+ * piece at that position, the returned value is indeterminate.
+ * @param state the current board state
+ * @param pos the position to look at
+ * @return the color of the piece at the given position (0/1 for black/white)
+ */
+int team03_getColor(board_t state, pos_t pos) {
+    uint8_t ind = team03_getIndexPos(pos);
+    return team03_getBit(state.color, ind);
+}
+
+/**
+ * Sets the piece at the given position to the given color.
+ * If there was no piece, places one first.
+ * @param state the board state to update
+ */
+void team03_setPiece(board_t *state, pos_t pos, int col) {
+    uint8_t ind = team03_getIndexPos(pos);
+    team03_setBit(&state->on, ind, 1);
+    team03_setBit(&state->color, ind, col);
 }
 
 /**
@@ -208,7 +219,7 @@ int team03_inBounds(pos_t pos) {
  * @return an integer in [0, 63]; the index of the bit corresponding
  * to the given position
  */
-uint8_t team03_getPosIndex(pos_t pos) {
+uint8_t team03_getIndexPos(pos_t pos) {
     return team03_getIndex(pos.y, pos.x);
 }
 
@@ -228,8 +239,8 @@ uint64_t team03_getMoveMask(pos_t start, pos_t end) {
     }
     
     // Convert positions to bit indices
-    uint8_t u = team03_getPosIndex(start);
-    uint8_t v = team03_getPosIndex(end);
+    uint8_t u = team03_getIndexPos(start);
+    uint8_t v = team03_getIndexPos(end);
     
     // Horizontal range
     if (start.y == end.y) {

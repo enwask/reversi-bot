@@ -89,6 +89,12 @@ pos_t team03_getMove(board_t state, int col, int time);
 board_t team03_loadBoard(const enum piece board[][SIZE]);
 
 /**
+ * Prints the state of the board.
+ * @param state the board state
+ */
+void team03_print(board_t state);
+
+/**
  * Returns a mask containing on bits in every position where there
  * is a piece of the given color.
  * @param state the board state to check
@@ -115,10 +121,11 @@ int team03_getPiece(board_t state, pos_t pos);
 int team03_getColor(board_t state, pos_t pos);
 
 /**
- * Prints the state of the board.
- * @param state the board state
+ * Sets the piece at the given position to the given color.
+ * If there was no piece, places one first.
+ * @param state the board state to update
  */
-void team03_print(board_t state);
+void team03_setPiece(board_t *state, pos_t pos, int col);
 
 /**
  * Counts all pieces on the board with the given color.
@@ -162,7 +169,7 @@ int team03_inBounds(pos_t pos);
  * @return an integer in [0, 63]: the index of the bit corresponding
  * to the given position
  */
-uint8_t team03_getPosIndex(pos_t pos);
+uint8_t team03_getIndexPos(pos_t pos);
 
 /**
  * Computes a bitmask for the move between start and end, inclusive.
