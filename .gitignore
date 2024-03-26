@@ -1,5 +1,6 @@
 # Executable + build cache
 reversi
+reversi_test
 cmake-build-debug/
 
 # Misc
