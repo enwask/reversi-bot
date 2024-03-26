@@ -258,11 +258,69 @@ void team03_executeMove(board_t *state, pos_t pos, int col);
 
 /**
  * Flips the pieces between the provided start and end positions, inclusive.
+ * Assumes all pieces in the range are present.
  * @param state the board state to update
  * @param start the start position of the run to flip
  * @param end the end position of the run to flip
  */
-void team03_flip(board_t *state, pos_t start, pos_t end);
+void team03_flip(board_t *state, pos_t start, pos_t end) {
+    // TODO: I think this works but worth more testing
+    // Smaller index first for ease of use
+    if (start.y > end.y || (start.y == end.y && start.x > end.x)) {
+        pos_t tmp = start;
+        start = end, end = tmp;
+    }
+    
+    // Convert positions to bit indices
+    uint8_t u = team03_getPosIndex(start);
+    uint8_t v = team03_getPosIndex(end);
+    
+    // Horizontal flip
+    if (start.y == end.y) {
+        // All the bits we need to flip are contiguous
+        uint64_t mask = team03_rangeMask(u, v);
+        state->color ^= mask; // invert the piece colors
+        return;
+    }
+    
+    // Vertical flip
+    if (start.x == end.x) {
+        // Mask with all bits in the target column
+        uint64_t mask = 0x0101010101010101ull << start.x;
+        mask &= team03_rangeMask(u, v); // restrict range
+        
+        // Invert the piece colors
+        state->color ^= mask;
+        return;
+    }
+    
+    // Diagonal flip :(
+    
+    // Main diagonal template masks
+    const uint64_t main = 0x8040201008040201ull; // southeast
+    const uint64_t anti = 0x0102040810204080ull; // northeast
+    
+    // Aligned with the main diagonal
+    if (start.x < end.x) {
+        // Shift the main diagonal
+        signed dif = (signed) start.y - start.x;
+        uint64_t mask = (dif >= 0) ? (main >> dif) : (main << -dif);
+        
+        // Restrict to flip range & do the thing
+        mask &= team03_rangeMask(u, v);
+        state->color ^= mask; // invert the piece colors
+        return;
+    }
+    
+    // Aligned with the anti-diagonal
+    // Shift the template mask
+    signed dif = (signed) start.x + start.y - 7;
+    uint64_t mask = (dif >= 0) ? (anti << dif) : (anti >> -dif);
+    
+    // Restrict to flip range and invert the piece colors
+    mask &= team03_rangeMask(u, v);
+    state->color ^= mask;
+}
 
 
 /*
@@ -300,6 +358,18 @@ void team03_setBit(int64_t *mask, uint8_t ind, int value) {
     
     if (value) *mask |= set;
     else *mask &= ~set;
+}
+
+/**
+ * Creates a mask with a range of bits between `start` and `end` asserted.
+ * @param start the start (from bit 0->) of the range to assert
+ * @param offset the (inclusive) end of the range to assert
+ * @return the described mask
+ */
+int64_t team03_rangeMask(uint8_t start, uint8_t end) {
+    uint64_t mask = 1ull << (end - start);
+    mask <<= 1, mask--;
+    return mask << start;
 }
 
 /**

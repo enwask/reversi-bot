@@ -212,6 +212,7 @@ void team03_executeMove(board_t *state, pos_t pos, int col);
 
 /**
  * Flips the pieces between the provided start and end positions, inclusive.
+ * Assumes all pieces in the range are present.
  * @param state the board state to update
  * @param start the start position of the run to flip
  * @param end the end position of the run to flip
@@ -246,6 +247,14 @@ int team03_getBit(int64_t mask, uint8_t ind);
  * @param value 0 to set the bit off; any other value to set it on
  */
 void team03_setBit(int64_t *mask, uint8_t ind, int value);
+
+/**
+ * Creates a mask with a range of bits between `start` and `end` asserted.
+ * @param start the start (from bit 0->) of the range to assert
+ * @param offset the (inclusive) end of the range to assert
+ * @return the described mask
+ */
+int64_t team03_rangeMask(uint8_t start, uint8_t end);
 
 /**
  * Counts the number of set bits in the given integer.
