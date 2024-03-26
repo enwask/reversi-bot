@@ -80,6 +80,19 @@ board_t team03_loadBoard(const enum piece board[][SIZE]) {
 }
 
 /**
+ * Returns a mask containing on bits in every position where there
+ * is a piece of the given color.
+ * @param state the board state to check
+ * @param col the piece color to look for
+ * @return the described mask
+ */
+uint64_t team03_getPieces(board_t state, int col) {
+    // Compute a mask for the requested color
+    int64_t color_mask = col ? state.color : ~state.color;
+    return state.on & color_mask; // filter placed pieces by the color
+}
+
+/**
  * Checks if there is a piece of any color at the given position.
  * @param state the board state
  * @param pos the position to check
@@ -141,12 +154,8 @@ void team03_print(board_t state) {
  * @return the number of pieces on the board with the given color
  */
 int team03_count(board_t state, int col) {
-    // Compute a mask of the pieces we're looking for
-    int64_t color_mask = col ? state.color : ~state.color;
-    int64_t mask = state.on & color_mask;
-    
-    // Count the number of set bits in our mask
-    return team03_popcount(mask);
+    // Count the number of set bits in the mask for this piece color
+    return team03_popcount(team03_getPieces(state, col));
 }
 
 /**
@@ -182,6 +191,15 @@ pos_t team03_makePos(int8_t y, int8_t x) {
     pos_t res;
     res.y = y, res.x = x;
     return res;
+}
+
+/**
+ * Checks whether the position is within the bounds of the board.
+ * @param pos the position to check
+ * @return 1 if the position is in bounds; 0 otherwise
+ */
+int team03_inBounds(pos_t pos) {
+    return pos.y >= 0 && pos.y < 8 && pos.x >= 0 && pos.x < 8;
 }
 
 /**
