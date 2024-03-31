@@ -27,15 +27,9 @@
  * that cell. The bits at any other (empty) positions are meaningless.
  * <br/><br/>
  *
- * In theory, this gives us really fast lookups and flips, and a has a few
- * nice perks. For instance, we can enumerate pieces of a given color pretty
- * much instantly, by using the first integer as a mask and ANDing it with
- * the second integer (inverting if we're interested in black pieces instead
- * of white). <br/><br/>
- *
- * This gives us fast lookups and flips in most cases; all our manipulations
- * should be vastly faster than the default implementations with their extra
- * overhead.
+ * In theory, this gives us really fast lookups and flips, which should
+ * directly correspond with better moves since we can traverse further
+ * down the game tree.
  */
 typedef struct board {
     uint64_t on, color;
@@ -169,7 +163,7 @@ int team03_inBounds(pos_t pos);
  * @return an integer in [0, 63]: the index of the bit corresponding
  * to the given position
  */
-uint8_t team03_getIndexPos(pos_t pos);
+uint8_t team03_getIndexByPos(pos_t pos);
 
 /**
  * Computes a bitmask for the move between start and end, inclusive.

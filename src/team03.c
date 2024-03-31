@@ -90,7 +90,6 @@ void team03_print(board_t state) {
         printf("%d ", i);
     printf("\n");
     
-    
     // Iterate over board cells
     for (uint8_t i = 0; i < 8; i++) {
         // Print the row header
@@ -131,7 +130,7 @@ uint64_t team03_getPieces(board_t state, int col) {
  * @return 1 if there is a piece at the given position; otherwise 0
  */
 int team03_getPiece(board_t state, pos_t pos) {
-    uint8_t ind = team03_getIndexPos(pos);
+    uint8_t ind = team03_getIndexByPos(pos);
     return team03_getBit(state.on, ind);
 }
 
@@ -143,7 +142,7 @@ int team03_getPiece(board_t state, pos_t pos) {
  * @return the color of the piece at the given position (0/1 for black/white)
  */
 int team03_getColor(board_t state, pos_t pos) {
-    uint8_t ind = team03_getIndexPos(pos);
+    uint8_t ind = team03_getIndexByPos(pos);
     return team03_getBit(state.color, ind);
 }
 
@@ -153,7 +152,7 @@ int team03_getColor(board_t state, pos_t pos) {
  * @param state the board state to update
  */
 void team03_setPiece(board_t *state, pos_t pos, int col) {
-    uint8_t ind = team03_getIndexPos(pos);
+    uint8_t ind = team03_getIndexByPos(pos);
     team03_setBit(&state->on, ind, 1);
     team03_setBit(&state->color, ind, col);
 }
@@ -181,8 +180,8 @@ int team03_equals(board_t state, pos_t pos1, pos_t pos2) {
     if (!a) return 1; // if both are off, we don't care about the color
     
     // Otherwise true if the colors are equal
-    return team03_getColor(state, pos1) ^
-           team03_getColor(state, pos1);
+    return team03_getColor(state, pos1)
+           == team03_getColor(state, pos2);
 }
 
 
@@ -219,7 +218,7 @@ int team03_inBounds(pos_t pos) {
  * @return an integer in [0, 63]; the index of the bit corresponding
  * to the given position
  */
-uint8_t team03_getIndexPos(pos_t pos) {
+uint8_t team03_getIndexByPos(pos_t pos) {
     return team03_getIndex(pos.y, pos.x);
 }
 
@@ -239,8 +238,8 @@ uint64_t team03_getMoveMask(pos_t start, pos_t end) {
     }
     
     // Convert positions to bit indices
-    uint8_t u = team03_getIndexPos(start);
-    uint8_t v = team03_getIndexPos(end);
+    uint8_t u = team03_getIndexByPos(start);
+    uint8_t v = team03_getIndexByPos(end);
     
     // Horizontal range
     if (start.y == end.y) {
