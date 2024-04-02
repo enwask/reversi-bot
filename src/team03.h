@@ -41,7 +41,7 @@ typedef struct board {
  * so functions using pos_t (like makePos) use this order too.
  */
 typedef struct pos {
-    uint8_t y, x;
+    int8_t y, x; // signed to avoid underflow issues in move loops
 } pos_t;
 
 
@@ -155,11 +155,11 @@ int team03_pieceEquals(board_t state, pos_t pos1, pos_t pos2);
 
 /**
  * Creates a pos_t instance from y and x positions.
- * @param y the y position
- * @param x the x position
+ * @param row the row/y position
+ * @param col the colummn/x position
  * @return
  */
-pos_t team03_makePos(uint8_t y, uint8_t x);
+pos_t team03_makePos(int8_t row, int8_t col);
 
 /**
  * Checks whether the position is within the bounds of the board.
@@ -174,7 +174,7 @@ int team03_inBounds(pos_t pos);
  * @return an integer in [0, 63]: the index of the bit corresponding
  * to the given position
  */
-uint8_t team03_getIndexByPos(pos_t pos);
+int8_t team03_getIndexByPos(pos_t pos);
 
 /**
  * Computes a bitmask for the move between start and end, inclusive.
@@ -246,7 +246,7 @@ void team03_setPieces(board_t *state, pos_t start, pos_t end, int col);
  * @return an integer in [0, 63]: the index of the bit for the given
  * position
  */
-uint8_t team03_getIndex(uint8_t y, uint8_t x);
+int8_t team03_getIndex(int8_t y, int8_t x);
 
 /**
  * Checks whether the given bit is on.
@@ -254,7 +254,7 @@ uint8_t team03_getIndex(uint8_t y, uint8_t x);
  * @param ind the index to check in the integer
  * @return 1 if the bit at the given index is on; 0 otherwise.
  */
-int team03_getBit(uint64_t mask, uint8_t ind);
+int team03_getBit(uint64_t mask, int8_t ind);
 
 /**
  * Sets the bit at the given index to the given value.
@@ -262,7 +262,7 @@ int team03_getBit(uint64_t mask, uint8_t ind);
  * @param ind the index of the bit to modify
  * @param value 0 to set the bit off; any other value to set it on
  */
-void team03_setBit(uint64_t *mask, uint8_t ind, int value);
+void team03_setBit(uint64_t *mask, int8_t ind, int value);
 
 /**
  * Creates a mask with a range of bits between `start` and `end` asserted.
@@ -270,13 +270,13 @@ void team03_setBit(uint64_t *mask, uint8_t ind, int value);
  * @param offset the (inclusive) end of the range to assert
  * @return the described mask
  */
-uint64_t team03_rangeMask(uint8_t start, uint8_t end);
+uint64_t team03_rangeMask(int8_t start, int8_t end);
 
 /**
  * Counts the number of set bits in the given integer.
  * @param num the integer
  * @return the number of bits that are on in `num`
  */
-uint8_t team03_popcount(uint64_t num);
+int8_t team03_popcount(uint64_t num);
 
 #endif // TEAM03_H

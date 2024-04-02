@@ -62,10 +62,10 @@ board_t team03_loadBoard(const enum piece board[][SIZE]) {
     res.on = res.color = 0;
     
     // Iterate over board positions
-    for (uint8_t i = 0; i < 8; i++) {
-        for (uint8_t j = 0; j < 8; j++) {
+    for (int8_t i = 0; i < 8; i++) {
+        for (int8_t j = 0; j < 8; j++) {
             // Operate on the cell at this index
-            uint8_t ind = team03_getIndex(i, j);
+            int8_t ind = team03_getIndex(i, j);
             switch (board[i][j]) {
                 case EMPTY: break;
                 case WHITE: team03_setBit(&res.color, ind, 1); // fall through to set res.on bit
@@ -86,18 +86,18 @@ board_t team03_loadBoard(const enum piece board[][SIZE]) {
 void team03_print(board_t state) {
     // Print column headers
     printf("  ");
-    for (uint8_t i = 0; i < 8; i++)
+    for (int8_t i = 0; i < 8; i++)
         printf("%d ", i);
     printf("\n");
     
     // Iterate over board cells
-    for (uint8_t i = 0; i < 8; i++) {
+    for (int8_t i = 0; i < 8; i++) {
         // Print the row header
         printf("%d ", i);
         
-        for (uint8_t j = 0; j < 8; j++) {
+        for (int8_t j = 0; j < 8; j++) {
             // Print this cell
-            uint8_t ind = team03_getIndex(i, j);
+            int8_t ind = team03_getIndex(i, j);
             if (!team03_getBit(state.on, ind)) printf(". "); // empty cell
             else {
                 // Non-empty cell
@@ -142,7 +142,7 @@ int team03_getPiece(board_t state, pos_t pos) {
  * @return the color of the piece at the given position (0/1 for black/white)
  */
 int team03_getColor(board_t state, pos_t pos) {
-    uint8_t ind = team03_getIndexByPos(pos);
+    int8_t ind = team03_getIndexByPos(pos);
     return team03_getBit(state.color, ind);
 }
 
@@ -152,7 +152,7 @@ int team03_getColor(board_t state, pos_t pos) {
  * @param state the board state to update
  */
 void team03_setPiece(board_t *state, pos_t pos, int col) {
-    uint8_t ind = team03_getIndexByPos(pos);
+    int8_t ind = team03_getIndexByPos(pos);
     team03_setBit(&state->on, ind, 1);
     team03_setBit(&state->color, ind, col);
 }
@@ -217,13 +217,13 @@ int team03_pieceEquals(board_t state, pos_t pos1, pos_t pos2) {
 
 /**
  * Creates a pos_t instance from y and x positions.
- * @param y the y position
- * @param x the x position
+ * @param row the row/y position
+ * @param col the colummn/x position
  * @return
  */
-pos_t team03_makePos(uint8_t y, uint8_t x) {
+pos_t team03_makePos(int8_t row, int8_t col) {
     pos_t res;
-    res.y = y, res.x = x;
+    res.y = row, res.x = col;
     return res;
 }
 
@@ -242,7 +242,7 @@ int team03_inBounds(pos_t pos) {
  * @return an integer in [0, 63]; the index of the bit corresponding
  * to the given position
  */
-uint8_t team03_getIndexByPos(pos_t pos) {
+int8_t team03_getIndexByPos(pos_t pos) {
     return team03_getIndex(pos.y, pos.x);
 }
 
@@ -262,8 +262,8 @@ uint64_t team03_getMoveMask(pos_t start, pos_t end) {
     }
     
     // Convert positions to bit indices
-    uint8_t u = team03_getIndexByPos(start);
-    uint8_t v = team03_getIndexByPos(end);
+    int8_t u = team03_getIndexByPos(start);
+    int8_t v = team03_getIndexByPos(end);
     
     // Horizontal range
     if (start.y == end.y) {
@@ -378,7 +378,7 @@ void team03_setPieces(board_t *state, pos_t start, pos_t end, int col) {
  * @return an integer in [0, 63]: the index of the bit for the given
  * position
  */
-uint8_t team03_getIndex(uint8_t y, uint8_t x) { return y * 8 + x; }
+int8_t team03_getIndex(int8_t y, int8_t x) { return y * 8 + x; }
 
 /**
  * Checks whether the given bit is on.
@@ -386,7 +386,7 @@ uint8_t team03_getIndex(uint8_t y, uint8_t x) { return y * 8 + x; }
  * @param ind the index to check in the integer
  * @return 1 if the bit at the given index is on; 0 otherwise.
  */
-int team03_getBit(uint64_t mask, uint8_t ind) {
+int team03_getBit(uint64_t mask, int8_t ind) {
     uint64_t check = ((uint64_t) 1) << ind;
     return (mask & check) != 0;
 }
@@ -397,7 +397,7 @@ int team03_getBit(uint64_t mask, uint8_t ind) {
  * @param ind the index of the bit to modify
  * @param value 0 to set the bit off; any other value to set it on
  */
-void team03_setBit(uint64_t *mask, uint8_t ind, int value) {
+void team03_setBit(uint64_t *mask, int8_t ind, int value) {
     uint64_t set = ((uint64_t) 1) << ind;
     
     if (value) *mask |= set;
@@ -410,7 +410,7 @@ void team03_setBit(uint64_t *mask, uint8_t ind, int value) {
  * @param offset the (inclusive) end of the range to assert
  * @return the described mask
  */
-uint64_t team03_rangeMask(uint8_t start, uint8_t end) {
+uint64_t team03_rangeMask(int8_t start, int8_t end) {
     uint64_t mask = 1ull << (end - start);
     mask <<= 1, mask--;
     return mask << start;
@@ -421,7 +421,7 @@ uint64_t team03_rangeMask(uint8_t start, uint8_t end) {
  * @param num the integer
  * @return the number of bits that are on in `num`
  */
-uint8_t team03_popcount(uint64_t num) {
+int8_t team03_popcount(uint64_t num) {
 #ifdef __has_builtin
 #if __has_builtin(__builtin_popcount)
 #define popcount(x) __builtin_popcount(x)
@@ -430,11 +430,11 @@ uint8_t team03_popcount(uint64_t num) {
 #ifdef popcount
     // If GCC's __builtin_popcount is available, we use that as
     // it's often a single machine-level instruction
-    return (uint8_t) popcount(num);
+    return (int8_t) popcount(num);
 #else
     // Otherwise we do it manually
     // https://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetKernighan
-    uint8_t res = 0;
+    int8_t res = 0;
     for (; num; res++) num &= num - 1;
     return res;
 #endif
