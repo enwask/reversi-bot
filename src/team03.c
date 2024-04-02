@@ -169,10 +169,34 @@ int team03_count(board_t state, int col) {
 }
 
 /**
+ * Checks if the given board states are equal.
+ * <p>
+ * TODO: Something to keep in mind here:
+     * If the garbage values in the color mask (where the associated
+     * bits in `state.on` are off) differ, this function will return
+     * false.<br/>
+     *
+     * <b>If we end up doing manipulations in other code that might
+     * modify colors at positions where pieces are not present</b>,
+     * this function should be changed to check the masks for each
+     * color ANDed with the on masks.<br/>
+     *
+     * For now we don't ever change color bits from 0 if there hasn't
+     * been a piece placed at them, so we should be fine.
+ * </p>
+ * @param state1 the first board position
+ * @param state2 the second board position
+ * @return 1 if the board states are the same; 0 otherwise.
+ */
+int team03_boardEquals(board_t state1, board_t state2) {
+    return state1.on == state2.on && state1.color == state2.color;
+}
+
+/**
  * Checks if the states of the given positions are equal.
  * @return 1 if the cells have the same state; 0 otherwise.
  */
-int team03_equals(board_t state, pos_t pos1, pos_t pos2) {
+int team03_pieceEquals(board_t state, pos_t pos1, pos_t pos2) {
     int a = team03_getPiece(state, pos1);
     int b = team03_getPiece(state, pos2);
     
@@ -287,25 +311,10 @@ uint64_t team03_getMoveMask(pos_t start, pos_t end) {
  */
 
 /**
- * Checks whether the given piece color can be played anywhere on
- * the board.
- * @param state the current board state
- * @param col the color of the piece to check moves for
- * @return 1 if there is at least one move for this color; 0 otherwise
- */
-int team03_canMove(board_t state, int col);
-
-/**
- * Checks if the game is over (i.e. neither color has a move they
- * can make anywhere on the board).
- * @param state the current board state
- * @return 1 if there is no move available for either team; 0 otherwise
- */
-int team03_isGameOver(board_t state);
-
-/**
  * Returns a (dynamic) array of all possible move positions for the
- * given color. The size is set in `num`.
+ * given color. The size is set in `num`.<br/>
+ * <b>These moves are not necessarily valid;</b> they are  positions
+ * where a piece of the given color can physically be placed.
  * @param state the current board state
  * @param col the color to check moves for
  * @param num output pointer for the array size
@@ -314,32 +323,15 @@ int team03_isGameOver(board_t state);
 pos_t *team03_getMoves(board_t state, int col, int *num);
 
 /**
- * Checks if the given move is valid on the current board state.
- * @param state the board state
- * @param pos the position to play at
- * @param col the color (0/1 for black/white) to play at this position
- * @return 1 if this is a valid move, 0 otherwise.
- */
-int team03_isValidMove(board_t state, pos_t pos, int col);
-
-/**
- * Tries to execute the given move, if it is valid for the current
- * board state. Returns whether the move was successful.
+ * Executes the described move, returning the newly updated board state.
+ * If the move is not valid, the returned board will equal the original
+ * state.
  * @param state the current board state
  * @param pos the position to play at
- * @param col the color of the piece to play
- * @return 1 if the move was executed successfully; 0 otherwise
- */
-int team03_tryMove(board_t *state, pos_t pos, int col);
-
-/**
- * Executes the described move, modifying the provided state.
- * Assumes the move is valid.
- * @param state a pointer to the board state to update
- * @param pos the position to play at
  * @param col the color (0/1) of the piece to place
+ * @return the board state after making the given move
  */
-void team03_executeMove(board_t *state, pos_t pos, int col);
+board_t team03_executeMove(board_t state, pos_t pos, int col);
 
 /**
  * Flips the pieces between the provided start and end positions, inclusive.
