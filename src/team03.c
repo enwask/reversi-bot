@@ -325,8 +325,9 @@ uint64_t team03_getMoveMask(pos_t start, pos_t end) {
 /**
  * Returns a (dynamic) array of all possible move positions for the
  * given color. The size is set in `num`.<br/>
- * <b>These moves are not necessarily valid;</b> they are  positions
- * where a piece of the given color can physically be placed.
+ * <b>These moves are not necessarily valid;</b> the only guarantee
+ * is that they are empty cells adjacent to at least one cell of the
+ * opposite color.
  * @param state the current board state
  * @param col the color to check moves for
  * @param num output pointer for the array size
@@ -343,7 +344,60 @@ pos_t *team03_getMoves(board_t state, int col, int *num);
  * @param col the color (0/1) of the piece to place
  * @return the board state after making the given move
  */
-board_t team03_executeMove(board_t state, pos_t pos, int col);
+board_t team03_executeMove(board_t state, pos_t pos, int col) {
+    // TODO: test this lol
+    // If the cell is nonempty, we can't place here
+    if (team03_hasPiece(state, pos)) return state;
+    
+    // Directions to check for flip ranges over
+    const pos_t dirs[] = {
+            {-1, -1},
+            {-1, 0},
+            {-1, 1},
+            {0,  -1},
+            {0,  1},
+            {1,  -1},
+            {1,  0},
+            {1,  1}
+    };
+    
+    // Try all directions
+    for (int i = 0; i < 8; i++) {
+        // Flip the range in this direction, if it's valid
+        pos_t dir = dirs[i];
+        team03_executeMovePartial(&state, pos, col,
+                                  pos.y + dir.y, pos.x + dir.x);
+    }
+    
+    // If we didn't make any moves, the state is unmodified
+    return state;
+}
+
+/**
+ * Executes part of a move in the given direction. If there is a valid
+ * range that would be flipped by this move, modifies the board state
+ * to reflect that change.
+ * @param state the board state to (maybe) update
+ * @param start the position of the move
+ * @param col the color being played
+ * @param dy row/y component of the direction for this partial move
+ * @param dy column/x component of the direction for this partial move
+ */
+void team03_executeMovePartial(board_t *state, pos_t start, int col, int8_t dy, int8_t dx) {
+    // Loop over the run we're looking at
+    pos_t end = team03_makePos(start.y + dy, start.x + dx);
+    for (; team03_inBounds(end); end.x += dx, end.y += dy) {
+        int piece = team03_getPiece(*state, end);
+        if (piece == !col) continue; // if the opponent has a piece here, keep going
+        
+        // If the cell is empty and |run| > 1, flip this range
+        if (piece == -1 && (end.x != start.x + dx && end.y != start.y + dy))
+            team03_setPieces(state, start, end, col);
+        
+        // Either we performed a move or the range is invalid
+        return;
+    }
+}
 
 /**
  * Flips the pieces between the provided start and end positions, inclusive.

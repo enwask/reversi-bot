@@ -204,8 +204,9 @@ uint64_t team03_getMoveMask(pos_t start, pos_t end);
 /**
  * Returns a (dynamic) array of all possible move positions for the
  * given color. The size is set in `num`.<br/>
- * <b>These moves are not necessarily valid;</b> they are  positions
- * where a piece of the given color can physically be placed.
+ * <b>These moves are not necessarily valid;</b> the only guarantee
+ * is that they are empty cells adjacent to at least one cell of the
+ * opposite color.
  * @param state the current board state
  * @param col the color to check moves for
  * @param num output pointer for the array size
@@ -223,6 +224,18 @@ pos_t *team03_getMoves(board_t state, int col, int *num);
  * @return the board state after making the given move
  */
 board_t team03_executeMove(board_t state, pos_t pos, int col);
+
+/**
+ * Executes part of a move in the given direction. If there is a valid
+ * range that would be flipped by this move, modifies the board state
+ * to reflect that change.
+ * @param state the board state to (maybe) update
+ * @param start the position of the move
+ * @param col the color being played
+ * @param dy row/y component of the direction for this partial move
+ * @param dy column/x component of the direction for this partial move
+ */
+void team03_executeMovePartial(board_t *state, pos_t start, int col, int8_t dx, int8_t dy);
 
 /**
  * Flips the pieces between the provided start and end positions, inclusive.
