@@ -98,12 +98,21 @@ void team03_print(board_t state);
 uint64_t team03_getPieces(board_t state, int col);
 
 /**
+ * Checks if there is a piece at the position and returns its color
+ * if there is.
+ * @param state the board state
+ * @param pos the position to check
+ * @return the color of the piece (1 or 0) if there is one present; otherwise, -1.
+ */
+int team03_getPiece(board_t state, pos_t pos);
+
+/**
  * Checks if there is a piece of any color at the given position.
  * @param state the board state
  * @param pos the position to check
  * @return 1 if there is a piece at the given position; otherwise 0
  */
-int team03_getPiece(board_t state, pos_t pos);
+int team03_hasPiece(board_t state, pos_t pos);
 
 /**
  * Gets the color of a piece at the given position. If there is no

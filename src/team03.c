@@ -124,13 +124,25 @@ uint64_t team03_getPieces(board_t state, int col) {
 }
 
 /**
+ * Checks if there is a piece at the position and returns its color
+ * if there is.
+ * @param state the board state
+ * @param pos the position to check
+ * @return the color of the piece (1 or 0) if there is one present; otherwise, -1.
+ */
+int team03_getPiece(board_t state, pos_t pos) {
+    if (!team03_hasPiece(state, pos)) return -1;
+    return team03_getColor(state, pos);
+}
+
+/**
  * Checks if there is a piece of any color at the given position.
  * @param state the board state
  * @param pos the position to check
  * @return 1 if there is a piece at the given position; otherwise 0
  */
-int team03_getPiece(board_t state, pos_t pos) {
-    uint8_t ind = team03_getIndexByPos(pos);
+int team03_hasPiece(board_t state, pos_t pos) {
+    int8_t ind = team03_getIndexByPos(pos);
     return team03_getBit(state.on, ind);
 }
 
@@ -197,8 +209,8 @@ int team03_boardEquals(board_t state1, board_t state2) {
  * @return 1 if the cells have the same state; 0 otherwise.
  */
 int team03_pieceEquals(board_t state, pos_t pos1, pos_t pos2) {
-    int a = team03_getPiece(state, pos1);
-    int b = team03_getPiece(state, pos2);
+    int a = team03_hasPiece(state, pos1);
+    int b = team03_hasPiece(state, pos2);
     
     if (a ^ b) return 0; // if the on-ness differs, then not equal
     if (!a) return 1; // if both are off, we don't care about the color
