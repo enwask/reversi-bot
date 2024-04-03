@@ -235,7 +235,7 @@ board_t team03_executeMove(board_t state, pos_t pos, int col);
  * @param dy row/y component of the direction for this partial move
  * @param dy column/x component of the direction for this partial move
  */
-void team03_executeMovePartial(board_t *state, pos_t start, int col, int8_t dx, int8_t dy);
+void team03_executeMovePartial(board_t *state, pos_t start, int col, int8_t dy, int8_t dx);
 
 /**
  * Flips the pieces between the provided start and end positions, inclusive.
