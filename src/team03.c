@@ -30,7 +30,6 @@ position *team03Move(const enum piece board[][SIZE], enum piece mine, int second
     
     // Return the position (duh)
     return res;
-#endif
 }
 
 /**
