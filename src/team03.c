@@ -493,16 +493,16 @@ uint64_t team03_rangeMask(int8_t start, int8_t end) {
  * @param num the integer
  * @return the number of bits that are on in `num`
  */
-int8_t team03_popcount(uint64_t num) {
+int team03_popcount(uint64_t num) {
 #ifdef __has_builtin
-#if __has_builtin(__builtin_popcount)
-#define popcount(x) __builtin_popcount(x)
+#if __has_builtin(__builtin_popcountll)
+#define popcount(x) __builtin_popcountll(x)
 #endif // has_builtin
 #endif // ifdef
 #ifdef popcount
     // If GCC's __builtin_popcount is available, we use that as
     // it's often a single machine-level instruction
-    return (int8_t) popcount(num);
+    return popcount(num);
 #else
     // Otherwise we do it manually
     // https://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetKernighan

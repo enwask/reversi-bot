@@ -51,9 +51,8 @@ typedef struct board {
 } board_t;
 
 /**
- * Lightweight position struct (position pointers are ugly).
- * Also row before col is easier to use in a lot of the function contexts
- * so functions using pos_t (like makePos) use this order too.
+ * Lightweight position struct.
+ * y=row, x=col
  */
 typedef struct pos {
     int8_t y, x; // signed to avoid underflow issues in move loops
@@ -316,6 +315,6 @@ uint64_t team03_rangeMask(int8_t start, int8_t end);
  * @param num the integer
  * @return the number of bits that are on in `num`
  */
-int8_t team03_popcount(uint64_t num);
+int team03_popcount(uint64_t num);
 
 #endif // TEAM03_H
