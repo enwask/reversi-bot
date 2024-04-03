@@ -26,10 +26,11 @@ position *team03Move(const enum piece board[][SIZE], enum piece mine, int second
     
     // Dynamically allocate the return position
     position *res = malloc(sizeof(position));
-    res->x = pos.x, res->y = pos.y;
+    res->x = pos.y, res->y = pos.x;
     
     // Return the position (duh)
     return res;
+#endif
 }
 
 /**
@@ -102,7 +103,7 @@ void team03_print(board_t state) {
             else {
                 // Non-empty cell
                 int color = team03_getBit(state.color, ind);
-                printf("%c ", color ? 'X' : 'O'); // print the cell color
+                printf("%c ", color ? 'O' : 'X'); // print the cell color
             }
         }
         printf("\n"); // end of this row
