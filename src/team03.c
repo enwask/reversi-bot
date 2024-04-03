@@ -19,10 +19,10 @@
 position *team03Move(const enum piece board[][SIZE], enum piece mine, int secondsleft) {
     // Translate stuff
     board_t state = team03_loadBoard(board);
-    int col = (mine == WHITE);
+    int color = (mine == WHITE);
     
     // Perform the move with our own state format
-    pos_t pos = team03_getMove(state, col, secondsleft);
+    pos_t pos = team03_getMove(state, color, secondsleft);
     
     // Dynamically allocate the return position
     position *res = malloc(sizeof(position));
@@ -35,11 +35,11 @@ position *team03Move(const enum piece board[][SIZE], enum piece mine, int second
 /**
  * Performs a move for our team.
  * @param board the current board state
- * @param col the color we're playing (0/1 for black/white)
+ * @param color the color we're playing (0/1 for black/white)
  * @param time the time (in seconds) our team has left on the game timer
  * @return the position we placed a piece at
  */
-pos_t team03_getMove(board_t state, int col, int time) {
+pos_t team03_getMove(board_t state, int color, int time) {
     team03_print(state);
     printf("\nBlack has %d pieces\nWhite has %d pieces\n\n", team03_count(state, 0), team03_count(state, 1));
     return team03_makePos(0, 0);
@@ -101,8 +101,8 @@ void team03_print(board_t state) {
             if (!team03_getBit(state.on, ind)) printf(". "); // empty cell
             else {
                 // Non-empty cell
-                int col = team03_getBit(state.color, ind);
-                printf("%c ", col ? 'X' : 'O'); // print the cell color
+                int color = team03_getBit(state.color, ind);
+                printf("%c ", color ? 'X' : 'O'); // print the cell color
             }
         }
         printf("\n"); // end of this row
@@ -114,12 +114,12 @@ void team03_print(board_t state) {
  * Returns a mask containing on bits in every position where there
  * is a piece of the given color.
  * @param state the board state to check
- * @param col the piece color to look for
+ * @param color the piece color to look for
  * @return the described mask
  */
-uint64_t team03_getPieces(board_t state, int col) {
+uint64_t team03_getPieces(board_t state, int color) {
     // Compute a mask for the requested color
-    uint64_t color_mask = col ? state.color : ~state.color;
+    uint64_t color_mask = color ? state.color : ~state.color;
     return state.on & color_mask; // filter placed pieces by the color
 }
 
@@ -162,22 +162,24 @@ int team03_getColor(board_t state, pos_t pos) {
  * Sets the piece at the given position to the given color.
  * If there was no piece, places one first.
  * @param state the board state to update
+ * @param pos the position to set the piece at
+ * @param color the color to set the piece to
  */
-void team03_setPiece(board_t *state, pos_t pos, int col) {
+void team03_setPiece(board_t *state, pos_t pos, int color) {
     int8_t ind = team03_getIndexByPos(pos);
     team03_setBit(&state->on, ind, 1);
-    team03_setBit(&state->color, ind, col);
+    team03_setBit(&state->color, ind, color);
 }
 
 /**
  * Counts all pieces on the board with the given color.
  * @param state the current board state
- * @param col the color to count (0/1 for black/white)
+ * @param color the color to count (0/1 for black/white)
  * @return the number of pieces on the board with the given color
  */
-int team03_count(board_t state, int col) {
+int team03_count(board_t state, int color) {
     // Count the number of set bits in the mask for this piece color
-    return team03_popcount(team03_getPieces(state, col));
+    return team03_popcount(team03_getPieces(state, color));
 }
 
 /**
@@ -329,11 +331,11 @@ uint64_t team03_getMoveMask(pos_t start, pos_t end) {
  * is that they are empty cells adjacent to at least one cell of the
  * opposite color.
  * @param state the current board state
- * @param col the color to check moves for
+ * @param color the color to check moves for
  * @param num output pointer for the array size
  * @return a pointer to the (dynamically allocated!) result array
  */
-pos_t *team03_getMoves(board_t state, int col, int *num);
+pos_t *team03_getMoves(board_t state, int color, int *num);
 
 /**
  * Executes the described move, returning the newly updated board state.
@@ -341,10 +343,10 @@ pos_t *team03_getMoves(board_t state, int col, int *num);
  * state.
  * @param state the current board state
  * @param pos the position to play at
- * @param col the color (0/1) of the piece to place
+ * @param color the color (0/1) of the piece to place
  * @return the board state after making the given move
  */
-board_t team03_executeMove(board_t state, pos_t pos, int col) {
+board_t team03_executeMove(board_t state, pos_t pos, int color) {
     // TODO: test this lol
     // If the cell is nonempty, we can't place here
     if (team03_hasPiece(state, pos)) return state;
@@ -365,7 +367,7 @@ board_t team03_executeMove(board_t state, pos_t pos, int col) {
     for (int i = 0; i < 8; i++) {
         // Flip the range in this direction, if it's valid
         pos_t dir = dirs[i];
-        team03_executeMovePartial(&state, pos, col, dir.y, dir.x);
+        team03_executeMovePartial(&state, pos, color, dir.y, dir.x);
     }
     
     // If we didn't make any moves, the state is unmodified
@@ -378,11 +380,11 @@ board_t team03_executeMove(board_t state, pos_t pos, int col) {
  * to reflect that change.
  * @param state the board state to (maybe) update
  * @param start the position of the move
- * @param col the color being played
+ * @param color the color being played
  * @param dy row/y component of the direction for this partial move
  * @param dy column/x component of the direction for this partial move
  */
-void team03_executeMovePartial(board_t *state, pos_t start, int col, int8_t dy, int8_t dx) {
+void team03_executeMovePartial(board_t *state, pos_t start, int color, int8_t dy, int8_t dx) {
 //    printf("\ndy = %d, dx = %d, col = %d\n", dy, dx, col);
     
     // Loop over the run we're looking at
@@ -390,12 +392,12 @@ void team03_executeMovePartial(board_t *state, pos_t start, int col, int8_t dy, 
     for (; team03_inBounds(end); end.y += dy, end.x += dx) {
         int piece = team03_getPiece(*state, end);
 //        printf("(y, x) = (%d, %d) -> %d\n", end.y, end.x, piece);
-        if (piece == !col) continue; // if the opponent has a piece here, keep going
+        if (piece == !color) continue; // if the opponent has a piece here, keep going
         
         // If the cell is empty and |run| > 1, flip this range
-        if (piece == col && (end.y != start.y + dy || end.x != start.x + dx)) {
+        if (piece == color && (end.y != start.y + dy || end.x != start.x + dx)) {
 //            printf("Setting run (%d, %d) -> (%d, %d)\n", start.y, start.x, end.y, end.x);
-            team03_setPieces(state, start, end, col);
+            team03_setPieces(state, start, end, color);
         }
         
         // Either we performed a move or the range is invalid
@@ -422,9 +424,9 @@ void team03_flipPieces(board_t *state, pos_t start, pos_t end) {
  * @param state the board state to update
  * @param start the start position of the run to set
  * @param end the end position of the run to set
- * @param col the color to set the pieces to
+ * @param color the color to set the pieces to
  */
-void team03_setPieces(board_t *state, pos_t start, pos_t end, int col) {
+void team03_setPieces(board_t *state, pos_t start, pos_t end, int color) {
     // Compute a mask for the bits between start and end
     uint64_t mask = team03_getMoveMask(start, end);
     
@@ -432,7 +434,7 @@ void team03_setPieces(board_t *state, pos_t start, pos_t end, int col) {
     state->on |= mask;
     
     // Set the piece colors
-    if (col) state->color |= mask;
+    if (color) state->color |= mask;
     else state->color &= ~mask;
 }
 

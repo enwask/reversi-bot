@@ -78,11 +78,11 @@ position *team03Move(const enum piece board[][SIZE], enum piece mine, int second
 /**
  * Performs a move for our team.
  * @param board the current board state
- * @param col the color we're playing (0/1 for black/white)
+ * @param color the color we're playing (0/1 for black/white)
  * @param time the time (in seconds) our team has left on the game timer
  * @return the position we placed a piece at
  */
-pos_t team03_getMove(board_t state, int col, int time);
+pos_t team03_getMove(board_t state, int color, int time);
 
 
 /*
@@ -107,10 +107,10 @@ void team03_print(board_t state);
  * Returns a mask containing on bits in every position where there
  * is a piece of the given color.
  * @param state the board state to check
- * @param col the piece color to look for
+ * @param color the piece color to look for
  * @return the described mask
  */
-uint64_t team03_getPieces(board_t state, int col);
+uint64_t team03_getPieces(board_t state, int color);
 
 /**
  * Checks if there is a piece at the position and returns its color
@@ -142,16 +142,18 @@ int team03_getColor(board_t state, pos_t pos);
  * Sets the piece at the given position to the given color.
  * If there was no piece, places one first.
  * @param state the board state to update
+ * @param pos the position to set the piece at
+ * @param color the color to set the piece to
  */
-void team03_setPiece(board_t *state, pos_t pos, int col);
+void team03_setPiece(board_t *state, pos_t pos, int color);
 
 /**
  * Counts all pieces on the board with the given color.
  * @param state the current board state
- * @param col the color to count (0/1 for black/white)
+ * @param color the color to count (0/1 for black/white)
  * @return the number of pieces on the board with the given color
  */
-int team03_count(board_t state, int col);
+int team03_count(board_t state, int color);
 
 /**
  * Checks if the given board states are equal.
@@ -223,11 +225,11 @@ uint64_t team03_getMoveMask(pos_t start, pos_t end);
  * is that they are empty cells adjacent to at least one cell of the
  * opposite color.
  * @param state the current board state
- * @param col the color to check moves for
+ * @param color the color to check moves for
  * @param num output pointer for the array size
  * @return a pointer to the (dynamically allocated!) result array
  */
-pos_t *team03_getMoves(board_t state, int col, int *num);
+pos_t *team03_getMoves(board_t state, int color, int *num);
 
 /**
  * Executes the described move, returning the newly updated board state.
@@ -235,10 +237,10 @@ pos_t *team03_getMoves(board_t state, int col, int *num);
  * state.
  * @param state the current board state
  * @param pos the position to play at
- * @param col the color (0/1) of the piece to place
+ * @param color the color (0/1) of the piece to place
  * @return the board state after making the given move
  */
-board_t team03_executeMove(board_t state, pos_t pos, int col);
+board_t team03_executeMove(board_t state, pos_t pos, int color);
 
 /**
  * Executes part of a move in the given direction. If there is a valid
@@ -246,11 +248,11 @@ board_t team03_executeMove(board_t state, pos_t pos, int col);
  * to reflect that change.
  * @param state the board state to (maybe) update
  * @param start the position of the move
- * @param col the color being played
+ * @param color the color being played
  * @param dy row/y component of the direction for this partial move
  * @param dy column/x component of the direction for this partial move
  */
-void team03_executeMovePartial(board_t *state, pos_t start, int col, int8_t dy, int8_t dx);
+void team03_executeMovePartial(board_t *state, pos_t start, int color, int8_t dy, int8_t dx);
 
 /**
  * Flips the pieces between the provided start and end positions, inclusive.
@@ -267,9 +269,9 @@ void team03_flipPieces(board_t *state, pos_t start, pos_t end);
  * @param state the board state to update
  * @param start the start position of the run to set
  * @param end the end position of the run to set
- * @param col the color to set the pieces to
+ * @param color the color to set the pieces to
  */
-void team03_setPieces(board_t *state, pos_t start, pos_t end, int col);
+void team03_setPieces(board_t *state, pos_t start, pos_t end, int color);
 
 
 /*
