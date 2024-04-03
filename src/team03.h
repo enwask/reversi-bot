@@ -12,6 +12,21 @@
 
 /*
  **********************
+ * Fixed-width types  *
+ **********************
+ */
+
+// Define fixed-width types if missing (pre-C99)
+#ifndef uint64_t
+#define uint64_t unsigned long long
+#endif
+#ifndef int8_t
+#define int8_t char
+#endif
+
+
+/*
+ **********************
  * Data types         *
  **********************
  */
