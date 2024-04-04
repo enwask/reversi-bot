@@ -713,9 +713,9 @@ uint64_t team03_rangeMask(int8_t start, int8_t end) {
  */
 int team03_popcount(uint64_t num) {
 #ifdef __has_builtin
-#if __has_builtin(__builtin_popcountll)
-#define popcount(x) __builtin_popcountll(x)
-#endif // has_builtin
+#   if __has_builtin(__builtin_popcountll)
+#       define popcount(x) __builtin_popcountll(x)
+#   endif // has_builtin
 #endif // ifdef
 #ifdef popcount
     // If GCC's __builtin_popcount is available, we use that as
@@ -724,7 +724,7 @@ int team03_popcount(uint64_t num) {
 #else
     // Otherwise we do it manually
     // https://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetKernighan
-    int8_t res = 0;
+    int res = 0;
     for (; num; res++) num &= num - 1;
     return res;
 #endif

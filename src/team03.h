@@ -17,12 +17,15 @@
  */
 
 // Define fixed-width types if missing (pre-C99)
-#ifndef uint64_t
-#define uint64_t unsigned long long
-#endif
-#ifndef int8_t
-#define int8_t char
-#endif
+#ifndef _UINT64_T
+#   define _UINT64_T
+typedef unsigned long long uint64_t;
+#endif //_UINT64_T
+
+#ifndef _INT8_T
+#   define _INT8_T
+typedef signed char int8_t;
+#endif // _INT8_T
 
 
 /*
