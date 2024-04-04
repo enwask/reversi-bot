@@ -82,7 +82,10 @@ int team03_evaluateStatic(board_t state, int color) {
     for (int i = 0; i < 4; i++) {
         if (team03_getColor(state, team03_makePos(corners[i][0], corners[i][1])) == color) score += 4;
     }
-    //int adjCorners[12, 2] = {{0, 1}, {1, 1}, {1, 0}, {0, 6}, {1, 6}, {1, 7}, {7, }}
+    int adjCorners[12][2] = {{0, 1}, {1, 1}, {1, 0}, {0, 6}, {1, 6}, {1, 7}, {7, 6}, {6, 6}, {6, 7}, {7, 1}, {6, 1}, {6, 0}};
+    for (int i = 0; i < 12; i++) {
+        if (team03_getColor(state, team03_makePos(adjCorners[i][0], adjCorners[i][1])) == color) score -= 3;
+    }
 
     return score;
 }
