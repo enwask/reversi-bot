@@ -657,6 +657,30 @@ solvePair_t team03_makeSolvePair(pos_t pos, int score) {
  */
 
 /**
+ * Convenience function for checking whether a bit is on by
+ * its position.
+ *
+ * @param mask the mask to check
+ * @param pos the position of the bit to check
+ *
+ * @return 1 if the bit at pos is on, 0 otherwise
+ */
+int team03_getBitAt(uint64_t mask, pos_t pos) {
+    return team03_getBit(mask, team03_getIndexByPos(pos));
+}
+
+/**
+ * Convenience function for setting the bit by its position.
+ *
+ * @param mask a pointer to the mask to modify
+ * @param pos the position of the bit to set
+ * @param value 0 to turn the bit off; any other value to turn it on
+ */
+void team03_setBitAt(uint64_t *mask, pos_t pos, int value) {
+    team03_setBit(mask, team03_getIndexByPos(pos), value);
+}
+
+/**
  * Gets the flat bit index for the given y/x indices.
  *
  * @return an integer in [0, 63]: the index of the bit for the given position

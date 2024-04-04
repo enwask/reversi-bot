@@ -412,6 +412,26 @@ int team03_getBit(uint64_t mask, int8_t ind);
 void team03_setBit(uint64_t *mask, int8_t ind, int value);
 
 /**
+ * Convenience function for checking whether a bit is on by
+ * its position.
+ *
+ * @param mask the mask to check
+ * @param pos the position of the bit to check
+ *
+ * @return 1 if the bit at pos is on, 0 otherwise
+ */
+int team03_getBitAt(uint64_t mask, pos_t pos);
+
+/**
+ * Convenience function for setting the bit by its position.
+ *
+ * @param mask a pointer to the mask to modify
+ * @param pos the position of the bit to set
+ * @param value 0 to turn the bit off; any other value to turn it on
+ */
+void team03_setBitAt(uint64_t *mask, pos_t pos, int value);
+
+/**
  * Creates a mask with a range of bits between `start` and `end` asserted.
  *
  * @param start the start (from bit 0->) of the range to assert
