@@ -317,6 +317,32 @@ uint64_t team03_getMoveMask(pos_t start, pos_t end);
 
 /*
  **********************
+ * Sorting & misc     *
+ **********************
+ */
+
+/**
+ * Sorts the subarray [lo, hi] of solve pairs in decreasing
+ * order of score.
+ *
+ * @param pairs the array to sort
+ * @param lo the leftmost index of the range to sort
+ * @param hi the rightmost index of the range to sort
+ */
+void team03_sort(solvePair_t *pairs, int lo, int hi);
+
+/**
+ * Merges the subarrays [lo, md) and [md, hi].
+ *
+ * @param arr the array to operate on
+ * @param lo the leftmost index of the range to merge
+ * @param md the middle index of the range to merge
+ * @param hi the rightmost index of the range to merge
+ */
+void team03_merge(solvePair_t *arr, int lo, int md, int hi);
+
+/*
+ **********************
  * Game logic         *
  **********************
  */

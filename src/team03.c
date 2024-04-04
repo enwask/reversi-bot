@@ -652,6 +652,63 @@ solvePair_t team03_makeSolvePair(pos_t pos, int score) {
 
 /*
  **********************
+ * Sorting & misc     *
+ **********************
+ */
+
+/**
+ * Sorts the subarray [lo, hi] of solve pairs in decreasing
+ * order of score.
+ *
+ * @param pairs the array to sort
+ * @param lo the leftmost index of the range to sort
+ * @param hi the rightmost index of the range to sort
+ */
+void team03_sort(solvePair_t *pairs, int lo, int hi) {
+    if (lo >= hi) return;
+    int md = (lo + hi) / 2;
+    
+    // Sort the subarrays
+    team03_sort(pairs, lo, md);
+    team03_sort(pairs, md + 1, hi);
+    
+    // Merge the subarrays in sorted order
+    team03_merge(pairs, lo, md + 1, hi);
+}
+
+/**
+ * Merges the subarrays [lo, md) and [md, hi].
+ *
+ * @param arr the array to operate on
+ * @param lo the leftmost index of the range to merge
+ * @param md the middle index of the range to merge
+ * @param hi the rightmost index of the range to merge
+ */
+void team03_merge(solvePair_t *arr, int lo, int md, int hi) {
+    // Setup
+    int n = hi - lo + 1;
+    solvePair_t temp[64];
+    
+    // Left/right subarray indices; temp array index
+    int i = lo, j = md, k = 0;
+    while (i < md || j <= hi) {
+        // Take a value from the left subarray
+        if (j > hi || (i < md && (arr[i].score > arr[j].score))) {
+            temp[k++] = arr[i++];
+            continue;
+        }
+        
+        // Otherwise take from the right
+        temp[k++] = arr[j++];
+    }
+    
+    // Copy back to original array; free up temp
+    for (i = lo; i <= hi; i++) arr[i] = temp[i - lo];
+}
+
+
+/*
+ **********************
  * Bit manipulation   *
  **********************
  */
