@@ -25,10 +25,12 @@ and modify the code that calls those functions accordingly.
 #include "reversi_functions.h"
 #include "team21.h"
 #include "../src/team03.h"
+#include "../src/teamrand.h"
+#include "../src/teamnaive.h"
 #include "reversi.h"
 
 int main(void) {
-    computerVComputer();
+    test();
     return 0;
 }
 
@@ -145,8 +147,8 @@ void computerVComputer() {
         player = opposite(player);
 
         // This waits about one second, so we can see the moves scrolling.
-        int curT = time(0);
-        while (time(0) == curT);
+        //int curT = time(0);
+        //while (time(0) == curT);
     }
 
     if (!blackOutOfTime && !whiteOutOfTime) {
@@ -256,3 +258,144 @@ void humanVComputer() {
     }
 }
 
+
+
+
+int play() {
+
+    // Initialize and print the board. Black goes first.
+    enum piece board[SIZE][SIZE];
+    initBoard(board);
+    //printBoard(board);
+    enum piece player = BLACK;
+
+    int blackTime = MAXTIME;
+    int whiteTime = MAXTIME;
+    enum boolean blackOutOfTime = FALSE;
+    enum boolean whiteOutOfTime = FALSE;
+
+    // Go till the game is done.
+    while (!gameOver(board)) {
+
+        // We can flip the team if the current team can't move.
+        if (!canMove(board, player))
+            player = opposite(player);
+
+        position *mymove = NULL;
+
+        // Black Computer Player
+        if (player == BLACK) {
+
+            // Do the move and time it.
+            int startT = time(0);
+            mymove = teamnaiveMove(board, player, blackTime);
+            int endT = time(0);
+
+            // Update time.
+            blackTime = blackTime - (endT - startT);
+            //printf("The black team selected row %d, column %d\n", mymove->x, mymove->y);
+        }
+
+            // White Computer Player
+        else {
+
+            // Do the move and time it.
+            int startT = time(0);
+            mymove = team03Move(board, player, whiteTime);
+            int endT = time(0);
+
+            // Update time.
+            whiteTime = whiteTime - (endT - startT);
+            //printf("The white team selected row %d, column %d\n", mymove->x, mymove->y);
+        }
+
+        // Execute then free move.
+        executeMove(board, mymove, player);
+        free(mymove);
+
+        // Black ran out of time.
+        if (blackTime < 0) {
+            //printf("Sorry, the Black Player ran out of time and loses automatically.\n");
+            blackOutOfTime = TRUE;
+            break;
+        }
+
+        // White ran out of time.
+        if (whiteTime < 0) {
+            //printf("Sorry, the White Player ran out of time and loses automatically.\n");
+            whiteOutOfTime = TRUE;
+            break;
+        }
+
+        // Print the result and go to the other player.
+        printBoard(board);
+        player = opposite(player);
+
+        // This waits about one second, so we can see the moves scrolling.
+        //int curT = time(0);
+        //while (time(0) == curT);
+    }
+
+    if (!blackOutOfTime && !whiteOutOfTime) {
+
+        // Get scores.
+        int blackScore = score(board, BLACK);
+        int whiteScore = score(board, WHITE);
+
+        // Print scores.
+        //printf("Black's score is %d\n", blackScore);
+        //printf("White's score is %d\n", whiteScore);
+
+        // Output the result.
+        if (blackScore > whiteScore) {
+            //printf("Black wins by %d points.\n", blackScore - whiteScore);
+            return 2;
+        }
+        else if (whiteScore > blackScore) {
+            //printf("White wins by %d points.\n", whiteScore - blackScore);
+            return 0;
+        }
+        else {
+            //printf("It's a tie!\n");
+            return 1;
+        }
+    }
+
+        // Black player ran out of time.
+    else if (blackOutOfTime) {
+        //printf("White wins because the Black Player ran out of time.\n");
+        return 0;
+    }
+        // White player ran out of time.
+    else {
+        //printf("Black wins because the White Player ran out of time.\n");
+        return 2;
+    }
+}
+
+
+// 1000 games, 4 depth naive / pure random
+// NAIVE: 1729
+// RANDOM: 271
+
+// 100 games, 5 depth naive / pure random
+// NAIVE: 173
+// RANDOM: 27
+
+// 1000 games, 4 depth naive / 4 depth [mymoves - othermoves]
+// NAIVE: 0
+// SMARTER: 200
+// (LMAO)
+// oh wait bc there's no randomness it's the same game 100 times shit
+
+void test() {
+    srand(time(NULL));
+    int black = 0; int white = 0;
+    for (int i = 0; i < 100; i++) {
+        int res = play();
+        black += res;
+        white += 2 - res;
+        printf("%d\n", i);
+    }
+    printf("NAIVE: %d\nSMARTER: %d\n", black, white);
+}

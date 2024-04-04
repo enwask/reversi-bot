@@ -3,12 +3,11 @@
  * Team 03
  */
 
-#ifndef TEAM03_H
-#define TEAM03_H
+#ifndef TEAMRAND_H
+#define TEAMRAND_H
 
 #include <stdlib.h>
 #include "../framework/reversi_functions.h"
-
 
 /*
  **********************
@@ -86,7 +85,7 @@ typedef struct solvePair {
  * @param secondsleft how much time we have left for the game
  * @return the position we place a piece at.
  */
-position *team03Move(const enum piece board[][SIZE], enum piece mine, int secondsleft);
+position *teamrandMove(const enum piece board[][SIZE], enum piece mine, int secondsleft);
 
 /**
  * Performs a move for our team.
@@ -95,7 +94,7 @@ position *team03Move(const enum piece board[][SIZE], enum piece mine, int second
  * @param time the time (in seconds) our team has left on the game timer
  * @return the position we placed a piece at
  */
-pos_t team03_getMove(board_t state, int color, int time);
+pos_t teamrand_getMove(board_t state, int color, int time);
 
 
 
@@ -105,9 +104,9 @@ pos_t team03_getMove(board_t state, int color, int time);
  **********************
  */
 
-int team03_evalBoardNaive(board_t state, int color);
+int teamrand_evalBoardNaive(board_t state, int color);
 
-solvePair_t team03_solveBoard(board_t state, int color, int layer);
+solvePair_t teamrand_solveBoard(board_t state, int color, int layer);
 
 
 
@@ -121,13 +120,13 @@ solvePair_t team03_solveBoard(board_t state, int color, int layer);
  * Loads the default/slow board state into our board data type.
  * @return the translated board state.
  */
-board_t team03_loadBoard(const enum piece board[][SIZE]);
+board_t teamrand_loadBoard(const enum piece board[][SIZE]);
 
 /**
  * Prints the state of the board.
  * @param state the board state
  */
-void team03_print(board_t state);
+void teamrand_print(board_t state);
 
 /**
  * Returns a mask containing on bits in every position where there
@@ -136,7 +135,7 @@ void team03_print(board_t state);
  * @param color the piece color to look for
  * @return the described mask
  */
-uint64_t team03_getPieces(board_t state, int color);
+uint64_t teamrand_getPieces(board_t state, int color);
 
 /**
  * Checks if there is a piece at the position and returns its color
@@ -145,7 +144,7 @@ uint64_t team03_getPieces(board_t state, int color);
  * @param pos the position to check
  * @return the color of the piece (1 or 0) if there is one present; otherwise, -1.
  */
-int team03_getPiece(board_t state, pos_t pos);
+int teamrand_getPiece(board_t state, pos_t pos);
 
 /**
  * Checks if there is a piece of any color at the given position.
@@ -153,7 +152,7 @@ int team03_getPiece(board_t state, pos_t pos);
  * @param pos the position to check
  * @return 1 if there is a piece at the given position; otherwise 0
  */
-int team03_hasPiece(board_t state, pos_t pos);
+int teamrand_hasPiece(board_t state, pos_t pos);
 
 /**
  * Gets the color of a piece at the given position. If there is no
@@ -162,7 +161,7 @@ int team03_hasPiece(board_t state, pos_t pos);
  * @param pos the position to look at
  * @return the color of the piece at the given position (0/1 for black/white)
  */
-int team03_getColor(board_t state, pos_t pos);
+int teamrand_getColor(board_t state, pos_t pos);
 
 /**
  * Sets the piece at the given position to the given color.
@@ -171,7 +170,7 @@ int team03_getColor(board_t state, pos_t pos);
  * @param pos the position to set the piece at
  * @param color the color to set the piece to
  */
-void team03_setPiece(board_t *state, pos_t pos, int color);
+void teamrand_setPiece(board_t *state, pos_t pos, int color);
 
 /**
  * Counts all pieces on the board with the given color.
@@ -179,7 +178,7 @@ void team03_setPiece(board_t *state, pos_t pos, int color);
  * @param color the color to count (0/1 for black/white)
  * @return the number of pieces on the board with the given color
  */
-int team03_count(board_t state, int color);
+int teamrand_count(board_t state, int color);
 
 /**
  * Checks if the given board states are equal.
@@ -187,7 +186,7 @@ int team03_count(board_t state, int color);
  * @param state2 the second board position
  * @return 1 if the board states are the same; 0 otherwise.
  */
-int team03_boardEquals(board_t state1, board_t state2);
+int teamrand_boardEquals(board_t state1, board_t state2);
 
 /**
  * Checks if the states of the given positions are equal.
@@ -196,7 +195,7 @@ int team03_boardEquals(board_t state1, board_t state2);
  * @return 1 if the cells have the same state (on-ness and color);
  * 0 otherwise.
  */
-int team03_pieceEquals(board_t state, pos_t pos1, pos_t pos2);
+int teamrand_pieceEquals(board_t state, pos_t pos1, pos_t pos2);
 
 
 /*
@@ -211,14 +210,14 @@ int team03_pieceEquals(board_t state, pos_t pos1, pos_t pos2);
  * @param col the colummn/x position
  * @return
  */
-pos_t team03_makePos(int8_t row, int8_t col);
+pos_t teamrand_makePos(int8_t row, int8_t col);
 
 /**
  * Checks whether the position is within the bounds of the board.
  * @param pos the position to check
  * @return 1 if the position is in bounds; 0 otherwise
  */
-int team03_inBounds(pos_t pos);
+int teamrand_inBounds(pos_t pos);
 
 /**
  * Gets the flat bit index for the given position.
@@ -226,7 +225,7 @@ int team03_inBounds(pos_t pos);
  * @return an integer in [0, 63]: the index of the bit corresponding
  * to the given position
  */
-int8_t team03_getIndexByPos(pos_t pos);
+int8_t teamrand_getIndexByPos(pos_t pos);
 
 /**
  * Computes a bitmask for the move between start and end, inclusive.
@@ -235,7 +234,7 @@ int8_t team03_getIndexByPos(pos_t pos);
  * @param end the end position of the range
  * @return a mask with the bits in the described range asserted
  */
-uint64_t team03_getMoveMask(pos_t start, pos_t end);
+uint64_t teamrand_getMoveMask(pos_t start, pos_t end);
 
 
 /*
@@ -255,7 +254,7 @@ uint64_t team03_getMoveMask(pos_t start, pos_t end);
  * @param num output pointer for the array size
  * @return a pointer to the (dynamically allocated!) result array
  */
-pos_t *team03_getMoves(board_t state, int color, int *num);
+pos_t *teamrand_getMoves(board_t state, int color, int *num);
 
 /**
  * Executes the described move, returning the newly updated board state.
@@ -266,7 +265,7 @@ pos_t *team03_getMoves(board_t state, int color, int *num);
  * @param color the color (0/1) of the piece to place
  * @return the board state after making the given move
  */
-board_t team03_executeMove(board_t state, pos_t pos, int color);
+board_t teamrand_executeMove(board_t state, pos_t pos, int color);
 
 /**
  * Executes part of a move in the given direction. If there is a valid
@@ -278,7 +277,7 @@ board_t team03_executeMove(board_t state, pos_t pos, int color);
  * @param dy row/y component of the direction for this partial move
  * @param dy column/x component of the direction for this partial move
  */
-void team03_executeMovePartial(board_t *state, pos_t start, int color, int8_t dy, int8_t dx);
+void teamrand_executeMovePartial(board_t *state, pos_t start, int color, int8_t dy, int8_t dx);
 
 /**
  * Flips the pieces between the provided start and end positions, inclusive.
@@ -287,7 +286,7 @@ void team03_executeMovePartial(board_t *state, pos_t start, int color, int8_t dy
  * @param start the start position of the run to flip
  * @param end the end position of the run to flip
  */
-void team03_flipPieces(board_t *state, pos_t start, pos_t end);
+void teamrand_flipPieces(board_t *state, pos_t start, pos_t end);
 
 /**
  * Sets the pieces between the provided start and end positions, inclusive,
@@ -297,14 +296,14 @@ void team03_flipPieces(board_t *state, pos_t start, pos_t end);
  * @param end the end position of the run to set
  * @param color the color to set the pieces to
  */
-void team03_setPieces(board_t *state, pos_t start, pos_t end, int color);
+void teamrand_setPieces(board_t *state, pos_t start, pos_t end, int color);
 
 /**
  * Create pair of position and score to return from recursive solve function.
   * @param pos the position to return
   * @param score the score to return
   */
-solvePair_t team03_makeSolvePair(pos_t pos, int score);
+solvePair_t teamrand_makeSolvePair(pos_t pos, int score);
 
 
 /*
@@ -318,7 +317,7 @@ solvePair_t team03_makeSolvePair(pos_t pos, int score);
  * @return an integer in [0, 63]: the index of the bit for the given
  * position
  */
-int8_t team03_getIndex(int8_t y, int8_t x);
+int8_t teamrand_getIndex(int8_t y, int8_t x);
 
 /**
  * Checks whether the given bit is on.
@@ -326,7 +325,7 @@ int8_t team03_getIndex(int8_t y, int8_t x);
  * @param ind the index to check in the integer
  * @return 1 if the bit at the given index is on; 0 otherwise.
  */
-int team03_getBit(uint64_t mask, int8_t ind);
+int teamrand_getBit(uint64_t mask, int8_t ind);
 
 /**
  * Sets the bit at the given index to the given value.
@@ -334,7 +333,7 @@ int team03_getBit(uint64_t mask, int8_t ind);
  * @param ind the index of the bit to modify
  * @param value 0 to set the bit off; any other value to set it on
  */
-void team03_setBit(uint64_t *mask, int8_t ind, int value);
+void teamrand_setBit(uint64_t *mask, int8_t ind, int value);
 
 /**
  * Creates a mask with a range of bits between `start` and `end` asserted.
@@ -342,13 +341,13 @@ void team03_setBit(uint64_t *mask, int8_t ind, int value);
  * @param offset the (inclusive) end of the range to assert
  * @return the described mask
  */
-uint64_t team03_rangeMask(int8_t start, int8_t end);
+uint64_t teamrand_rangeMask(int8_t start, int8_t end);
 
 /**
  * Counts the number of set bits in the given integer.
  * @param num the integer
  * @return the number of bits that are on in `num`
  */
-int team03_popcount(uint64_t num);
+int teamrand_popcount(uint64_t num);
 
-#endif // TEAM03_H
+#endif // TEAMRAND_H

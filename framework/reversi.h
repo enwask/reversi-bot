@@ -6,5 +6,7 @@
 void humanVHuman();
 void humanVComputer();
 void computerVComputer();
+int play();
+void test();
 
 #endif // REVERSI_H_INCLUDED
