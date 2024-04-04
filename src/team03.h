@@ -107,7 +107,7 @@ pos_t team03_getMove(board_t state, int color, int time);
 
 int team03_evalBoardNaive(board_t state, int color);
 
-solvePair_t team03_solveBoard(board_t state, int color, int layer);
+solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, int beta);
 
 
 

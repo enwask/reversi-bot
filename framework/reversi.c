@@ -288,7 +288,7 @@ int play() {
 
             // Do the move and time it.
             int startT = time(0);
-            mymove = teamnaiveMove(board, player, blackTime);
+            mymove = team03Move(board, player, blackTime);
             int endT = time(0);
 
             // Update time.
@@ -301,7 +301,7 @@ int play() {
 
             // Do the move and time it.
             int startT = time(0);
-            mymove = team03Move(board, player, whiteTime);
+            mymove = teamrandMove(board, player, whiteTime);
             int endT = time(0);
 
             // Update time.
@@ -328,7 +328,7 @@ int play() {
         }
 
         // Print the result and go to the other player.
-        printBoard(board);
+        //printBoard(board);
         player = opposite(player);
 
         // This waits about one second, so we can see the moves scrolling.
@@ -388,6 +388,10 @@ int play() {
 // (LMAO)
 // oh wait bc there's no randomness it's the same game 100 times shit
 
+// 100 games, 4 depth smart / pure random
+// SMARTER: 155
+// RANDOM: 45
+
 void test() {
     srand(time(NULL));
     int black = 0; int white = 0;
@@ -397,5 +401,5 @@ void test() {
         white += 2 - res;
         printf("%d\n", i);
     }
-    printf("NAIVE: %d\nSMARTER: %d\n", black, white);
+    printf("SMARTER: %d\nRANDOM: %d\n", black, white);
 }

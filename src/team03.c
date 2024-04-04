@@ -42,7 +42,7 @@ position *team03Move(const enum piece board[][SIZE], enum piece mine, int second
 pos_t team03_getMove(board_t state, int color, int time) {
     //team03_print(state);
     //printf("\nBlack has %d pieces\nWhite has %d pieces\n\n", team03_count(state, 0), team03_count(state, 1));
-    solvePair_t pair = team03_solveBoard(state, color, 4);
+    solvePair_t pair = team03_solveBoard(state, color, 6, -1e9, 1e9);
     return pair.pos;
 }
 
@@ -69,7 +69,7 @@ int team03_evalBoard(board_t state, int color) {
 
 
 
-solvePair_t team03_solveBoard(board_t state, int color, int layer) {
+solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, int beta) {
     if (layer == 0) {
         int score = team03_evalBoard(state, color);
         pos_t pos = team03_makePos(-1, -1);
@@ -87,20 +87,24 @@ solvePair_t team03_solveBoard(board_t state, int color, int layer) {
             board_t nState = team03_executeMove(state, pos, color);
             if (team03_boardEquals(state, nState)) continue;
             iCanPlay = 1;
-            solvePair_t pair = team03_solveBoard(nState, color^1, layer - 1);
+            solvePair_t pair = team03_solveBoard(nState, color^1, layer - 1, -beta, -alpha);
             int score = 0 - pair.score;
-            //printf("%d\n", score);
-
             if (score > best) {
                 best = score;
                 bestPos = pos;
             }
+            if (score > alpha) alpha = score;
+            if (alpha >= beta) {
+                solvePair_t pair = team03_makeSolvePair(bestPos, alpha);
+                return pair;
+            }
+            
         }
     }
 
     if (!iCanPlay) {
         if (otherCanPlay) {
-            solvePair_t ret = team03_solveBoard(state, color^1, layer - 1);
+            solvePair_t ret = team03_solveBoard(state, color^1, layer - 1, -beta, -alpha);
             ret.score = 0 - ret.score;
             return ret;
         }
