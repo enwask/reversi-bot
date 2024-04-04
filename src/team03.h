@@ -115,6 +115,34 @@ pos_t team03_getMove(board_t state, int color, int time);
  */
 
 /**
+ * Computes a rough estimate of the given color's mobility for the
+ * current board state, by counting the number of cells that could
+ * potentially be a valid move location (that is, empty cells that
+ * are adjacent to at least one cell of the opponent's color).
+ * <br/><br/>
+ *
+ * This estimate is definitionally an upper bound for the number
+ * of valid moves.
+ *
+ * @param state the current board state
+ * @param color the color to check mobility for
+ *
+ * @return the number of *potential* move locations
+ */
+int team03_estimateMobility(board_t state, int color);
+
+/**
+ * Computes the given color's mobility for the current board state,
+ * counting the number of valid moves that color can take.
+ *
+ * @param state the current board state
+ * @param color the color to consider moves for
+ *
+ * @return the number of valid moves that the color can take
+ */
+int team03_computeMobility(board_t state, int color);
+
+/**
  * Statically evaluate the current board position for a given color.
  * Only accounts for the current level, disregarding future moves.
  *
@@ -124,31 +152,6 @@ pos_t team03_getMove(board_t state, int color, int time);
  * @return a relative score for the current board state
  */
 int team03_evaluateStatic(board_t state, int color);
-
-/**
- * Statically evaluates all of color's moves for the current board
- * state, outputting a list pairing move positions with their static
- * scores in descending order of value.
- * <br/><br/>
- *
- * Accepts inclusive bounds [min, max] for valid scores. If *any*
- * score found is outside these bounds, immediately stops searching
- * and returns -1, setting the array to a null pointer.
- *
- * @param state the current board state
- * @param color the color to check moves for
- * @param min the minimum score for valid move bounds; any move with
- *          a score \< min will break out and return -1 and set the
- *          output pointer to null
- * @param max the maximum score for valid move bounds; any move with
- *          a score \> max will break out and return -1 and set the
- *          output pointer to null
- * @param out_ptr a pointer to a pointer which will be set to the
- *          (dynamically allocated!!) result array
- *
- * @return the result array size, or -1 if any move score was found outside of [min, max]
- */
-int team03_getScoresStatic(board_t state, int color, int min, int max, solvePair_t **out_ptr);
 
 
 /*
@@ -162,6 +165,30 @@ pos_t team03_iterate(board_t state, int color);
 // TODO: ben pls write doc comments :(
 // TODO: fukc u 2: electric boogaloo
 solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, int beta);
+
+/**
+ * Statically evaluates all of color's moves for the current board
+ * state, outputting a list pairing move positions with their static
+ * scores in descending order of value.
+ * <br/><br/>
+ *
+ * Accepts inclusive bounds [min, max] for valid scores. If *any*
+ * score found is outside these bounds, immediately stops searching
+ * and returns -1. The passed array will still have been modified.
+ *
+ * @param state the current board state
+ * @param color the color to check moves for
+ * @param min the minimum score for valid move bounds; any move with
+ *          a score \< min will break out and return -1 and set the
+ *          output pointer to null
+ * @param max the maximum score for valid move bounds; any move with
+ *          a score \> max will break out and return -1 and set the
+ *          output pointer to null
+ * @param arr a pointer to an array solvePair_t[64]
+ *
+ * @return the result array size, or -1 if any move score was found outside of [min, max]
+ */
+int team03_getMoveScores(board_t state, int color, int min, int max, solvePair_t *arr);
 
 
 /*
@@ -346,6 +373,17 @@ void team03_merge(solvePair_t *arr, int lo, int md, int hi);
  * Game logic         *
  **********************
  */
+
+/**
+ * Checks if the described move is valid. Implementation is identical
+ * to `executeMove` except that we break early if any one of the
+ * directions we're looking in is a valid flip.
+ *
+ * @param state the current board state
+ * @param pos the position to try playing at
+ * @param color the color (0/1) of the piece to place
+ */
+int team03_isValidMove(board_t state, pos_t pos, int color);
 
 /**
  * Executes the described move, returning the newly updated board state.

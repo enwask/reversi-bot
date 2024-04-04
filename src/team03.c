@@ -58,6 +58,52 @@ pos_t team03_getMove(board_t state, int color, int time) {
  */
 
 /**
+ * Computes a rough estimate of the given color's mobility for the
+ * current board state, by counting the number of cells that could
+ * potentially be a valid move location (that is, empty cells that
+ * are adjacent to at least one cell of the opponent's color).
+ * <br/><br/>
+ *
+ * This estimate is definitionally an upper bound for the number
+ * of valid moves.
+ *
+ * @param state the current board state
+ * @param color the color to check mobility for
+ *
+ * @return the number of *potential* move locations
+ */
+int team03_estimateMobility(board_t state, int color) {
+    // TODO: Implement mobility estimates when actual mobility is inevitably too slow
+    return -1;
+//    uint64_t adj_mask; // combined mask for cells adjacent to opposing pieces
+//    uint64_t opp_mask = team03_getPieces(state, !color); // mask of opponent's pieces
+}
+
+/**
+ * Computes the given color's mobility for the current board state,
+ * counting the number of valid moves that color can take.
+ *
+ * @param state the current board state
+ * @param color the color to consider moves for
+ *
+ * @return the number of valid moves that the color can take
+ */
+int team03_computeMobility(board_t state, int color) {
+    // Count for number of valid moves
+    int res = 0;
+    
+    // Loop over all cell positions
+    pos_t pos = team03_makePos(0, 0);
+    for (; pos.y < 8; pos.y++) {
+        for (; pos.x < 8; pos.x++) {
+            // Update our valid move count if we found one
+            res += team03_isValidMove(state, pos, color);
+        }
+    }
+    return res;
+}
+
+/**
  * Statically evaluate the current board position for a given color.
  * Only accounts for the current level, disregarding future moves.
  *
@@ -90,31 +136,6 @@ int team03_evaluateStatic(board_t state, int color) {
     return score;
 }
 
-/**
- * Statically evaluates all of color's moves for the current board
- * state, outputting a list pairing move positions with their static
- * scores in descending order of value.
- * <br/><br/>
- *
- * Accepts inclusive bounds [min, max] for valid scores. If *any*
- * score found is outside these bounds, immediately stops searching
- * and returns -1, setting the array to a null pointer.
- *
- * @param state the current board state
- * @param color the color to check moves for
- * @param min the minimum score for valid move bounds; any move with
- *          a score \< min will break out and return -1 and set the
- *          output pointer to null
- * @param max the maximum score for valid move bounds; any move with
- *          a score \> max will break out and return -1 and set the
- *          output pointer to null
- * @param out_ptr a pointer to a pointer which will be set to the
- *          (dynamically allocated!!) result array
- *
- * @return the result array size, or -1 if any move score was found outside of [min, max]
- */
-int team03_getScoresStatic(board_t state, int color, int min, int max, solvePair_t **out_ptr);
-
 
 /*
  **********************
@@ -128,7 +149,7 @@ int team03_getScoresStatic(board_t state, int color, int min, int max, solvePair
 
 
 pos_t team03_iterate(board_t state, int color) {
-    solvePair_t moveList [64];
+    solvePair_t moveList[64];
     int ind = 0;
     for (int r = 0; r < 8; r++) {
         for (int c = 0; c < 8; c++) {
@@ -140,21 +161,22 @@ pos_t team03_iterate(board_t state, int color) {
             }
         }
     }
-
+    
     int layers = 1;
-
+    
     pos_t bestPos;
-
+    
     while (1) {
         int best = -1e9;
         bestPos = team03_makePos(-1, -1);
-
+        
         int alpha = -1e9;
         int beta = 1e9;
-
+        
         for (int i = 0; i < ind; i++) {
             solvePair_t pair = moveList[i];
-            solvePair_t pair2 = team03_solveBoard(team03_executeMove(state, pair.pos, color), color ^ 1, layers - 1, -beta, -alpha);
+            solvePair_t pair2 = team03_solveBoard(team03_executeMove(state, pair.pos, color), color ^ 1, layers - 1,
+                                                  -beta, -alpha);
             int score = 0 - pair2.score;
             moveList[i].score = score;
             if (score > best) {
@@ -175,8 +197,6 @@ pos_t team03_iterate(board_t state, int color) {
     }
     return bestPos;
 }
-
-
 
 solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, int beta) {
     if (layer == 0) {
@@ -232,6 +252,54 @@ solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, in
     solvePair_t pair = team03_makeSolvePair(bestPos, best);
     return pair;
     
+}
+
+/**
+ * Statically evaluates all of color's moves for the current board
+ * state, outputting a list pairing move positions with their static
+ * scores in descending order of value.
+ * <br/><br/>
+ *
+ * Accepts inclusive bounds [min, max] for valid scores. If *any*
+ * score found is outside these bounds, immediately stops searching
+ * and returns -1. The passed array will still have been modified.
+ *
+ * @param state the current board state
+ * @param color the color to check moves for
+ * @param min the minimum score for valid move bounds; any move with
+ *          a score \< min will break out and return -1 and set the
+ *          output pointer to null
+ * @param max the maximum score for valid move bounds; any move with
+ *          a score \> max will break out and return -1 and set the
+ *          output pointer to null
+ * @param arr a pointer to an array solvePair_t[64]
+ *
+ * @return the result array size, or -1 if any move score was found outside of [min, max]
+ */
+int team03_getMoveScores(board_t state, int color, int min, int max, solvePair_t *arr) {
+    // # of valid moves we've found
+    int num = 0;
+    
+    // Loop over all cell positions
+    pos_t pos = team03_makePos(0, 0);
+    for (; pos.y < 8; pos.y++) {
+        for (; pos.x < 8; pos.x++) {
+            // Execute this move; skip if its invalid
+            board_t cur = team03_executeMove(state, pos, color);
+            if (team03_boardEquals(state, cur)) continue;
+            
+            // Compute the score for this move
+            int score = team03_evaluateStatic(state, color);
+            
+            // Prune the shit. Or don't lol
+            if (score < min || score > max) return -1;
+            arr[num++] = team03_makeSolvePair(pos, score);
+        }
+    }
+    
+    // Sort the output array
+    team03_sort(arr, 0, num - 1);
+    return num;
 }
 
 
@@ -541,6 +609,47 @@ uint64_t team03_getMoveMask(pos_t start, pos_t end) {
  */
 
 /**
+ * Checks if the described move is valid. Implementation is identical
+ * to `executeMove` except that we break early if any one of the
+ * directions we're looking in is a valid flip.
+ *
+ * @param state the current board state
+ * @param pos the position to try playing at
+ * @param color the color (0/1) of the piece to place
+ */
+int team03_isValidMove(board_t state, pos_t pos, int color) {
+    // TODO: test this more lol
+    // If the cell is nonempty, we can't place here
+    if (team03_hasPiece(state, pos)) return 0;
+    
+    // Directions to check for flip ranges over
+    const pos_t dirs[] = {
+            {-1, -1},
+            {-1, 0},
+            {-1, 1},
+            {0,  -1},
+            {0,  1},
+            {1,  -1},
+            {1,  0},
+            {1,  1}
+    };
+    
+    // Try all directions
+    for (int i = 0; i < 8; i++) {
+        // Flip the range in this direction, if it's valid
+        pos_t dir = dirs[i];
+        board_t cur = state;
+        team03_executeMovePartial(&cur, pos, color, dir.y, dir.x);
+        
+        // If the state was modified, we did a flip => this move is valid
+        if (!team03_boardEquals(state, cur)) return 1;
+    }
+    
+    // If we didn't make any flips, the move is invalid
+    return 0;
+}
+
+/**
  * Executes the described move, returning the newly updated board state.
  * If the move is not valid, the returned board will equal the original
  * state.
@@ -552,7 +661,7 @@ uint64_t team03_getMoveMask(pos_t start, pos_t end) {
  * @return the board state after making the given move
  */
 board_t team03_executeMove(board_t state, pos_t pos, int color) {
-    // TODO: test this lol
+    // TODO: test this more lol
     // If the cell is nonempty, we can't place here
     if (team03_hasPiece(state, pos)) return state;
     
