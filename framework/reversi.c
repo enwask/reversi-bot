@@ -290,7 +290,7 @@ int play(enum piece ourColor) {
             
             // Update time.
             blackTime = blackTime - (endT - startT);
-            //printf("The black team selected row %d, column %d\n", mymove->x, mymove->y);
+            printf("The black team selected row %d, column %d\n", mymove->x, mymove->y);
         }
             
             // White Computer Player
@@ -303,7 +303,7 @@ int play(enum piece ourColor) {
             
             // Update time.
             whiteTime = whiteTime - (endT - startT);
-            //printf("The white team selected row %d, column %d\n", mymove->x, mymove->y);
+            printf("The white team selected row %d, column %d\n", mymove->x, mymove->y);
         }
         
         // Execute then free move.
@@ -325,7 +325,7 @@ int play(enum piece ourColor) {
         }
         
         // Print the result and go to the other player.
-        //printBoard(board);
+        printBoard(board);
         player = opposite(player);
         
         // This waits about one second, so we can see the moves scrolling.

@@ -154,7 +154,10 @@ int team03_getScoresStatic(board_t state, int color, int min, int max, solvePair
  **********************
  */
 
+pos_t team03_iterate(board_t state, int color);
+
 // TODO: ben pls write doc comments :(
+// TODO: fukc u 2: electric boogaloo
 solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, int beta);
 
 
