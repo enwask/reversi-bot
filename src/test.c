@@ -7,39 +7,39 @@
 int stateEquals(board_t a, board_t b) { return a.on == b.on && a.color == b.color; }
 
 void setPieces(board_t *state, pos_t pos1, pos_t pos2, int col) {
-    uint8_t x1 = pos1.x, y1 = pos1.y;
-    uint8_t x2 = pos2.x, y2 = pos2.y;
+    int8_t x1 = pos1.x, y1 = pos1.y;
+    int8_t x2 = pos2.x, y2 = pos2.y;
     if (y1 > y2 || (y1 == y2 && x1 > x2)) {
-        uint8_t tmp = y1;
+        int8_t tmp = y1;
         y1 = y2, y2 = tmp;
         tmp = x1;
         x1 = x2, x2 = tmp;
     }
     
     if (x1 == x2) {
-        for (uint8_t y = y1; y <= y2; y++) {
+        for (int8_t y = y1; y <= y2; y++) {
             team03_setPiece(state, team03_makePos(y, x1), col);
         }
         return;
     }
     
     if (y1 == y2) {
-        for (uint8_t x = x1; x <= x2; x++) {
+        for (int8_t x = x1; x <= x2; x++) {
             team03_setPiece(state, team03_makePos(y1, x), col);
         }
         return;
     }
     
-    for (uint8_t y = y1; y <= y2; y++) {
+    for (int8_t y = y1; y <= y2; y++) {
         if (x1 <= x2) {
-            for (uint8_t x = x1; x <= x2; x++) {
+            for (int8_t x = x1; x <= x2; x++) {
                 if (abs((signed) x - x1) != abs((signed) y - y1)) continue;
                 team03_setPiece(state, team03_makePos(y, x), col);
             }
             continue;
         }
         
-        for (uint8_t x = x1; x <= x1 && x >= x2; x--) {
+        for (int8_t x = x1; x <= x1 && x >= x2; x--) {
             if (abs((signed) x - x1) != abs((signed) y - y1)) continue;
             team03_setPiece(state, team03_makePos(y, x), col);
         }
@@ -51,10 +51,10 @@ int main(void) {
     fast.on = fast.color = 0;
 
 //    for (int i = 0; i < 100000; i++) {
-    for (uint8_t y1 = 0; y1 < 8; y1++) {
-        for (uint8_t x1 = 0; x1 < 8; x1++) {
-            for (uint8_t y2 = 0; y2 < 8; y2++) {
-                for (uint8_t x2 = 0; x2 < 8; x2++) {
+    for (int8_t y1 = 0; y1 < 8; y1++) {
+        for (int8_t x1 = 0; x1 < 8; x1++) {
+            for (int8_t y2 = 0; y2 < 8; y2++) {
+                for (int8_t x2 = 0; x2 < 8; x2++) {
                     int col = (y1 + x1 + y2 + x2) % 2;
                     if (!(x1 == x2
                           || y1 == y2
@@ -85,7 +85,7 @@ int main(void) {
     printf("OK!\n");
 //    }
 
-////    uint64_t mask = team03_rangeMask(0, 63);
+////    int64_t mask = team03_rangeMask(0, 63);
 ////    printf("rangeMask(0,63):\n");
 ////    for (int i = 0; i < 64; i++) printf("%d", team03_getBit(mask, i));
 ////    printf("\n");
