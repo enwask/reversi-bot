@@ -76,7 +76,15 @@ int team03_evaluateStatic(board_t state, int color) {
             if (!team03_boardEquals(state, team03_executeMove(state, pos, color ^ 1))) otherMoves++;
         }
     }
-    return moves - otherMoves;
+    int score = moves - otherMoves;
+
+    int corners[4][2] = {{0, 0}, {0, 7}, {7, 7}, {7, 0}};
+    for (int i = 0; i < 4; i++) {
+        if (team03_getColor(state, team03_makePos(corners[i][0], corners[i][1])) == color) score += 4;
+    }
+    //int adjCorners[12, 2] = {{0, 1}, {1, 1}, {1, 0}, {0, 6}, {1, 6}, {1, 7}, {7, }}
+
+    return score;
 }
 
 /**
@@ -157,10 +165,10 @@ pos_t team03_iterate(board_t state, int color) {
             }
         }
 
-        moveList = team03_sortMoveList(moveList, ind);
+        team03_sort(moveList, 0, ind - 1);
 
         layers++;
-        if (layers == 8) break;
+        if (layers == 6) break;
     }
     return bestPos;
 }
