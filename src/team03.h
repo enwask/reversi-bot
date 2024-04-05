@@ -160,10 +160,30 @@ int team03_evaluateStatic(board_t state, int color);
  **********************
  */
 
+/**
+ * Iteratively deepens the search tree, evaluating at higher and
+ * higher depths until we've used as much time as we want.
+ *
+ * @param state the current board state
+ * @param color our color
+ *
+ * @return the best move we find before we use the allotted time
+ */
 pos_t team03_iterate(board_t state, int color);
 
-// TODO: ben pls write doc comments :(
-// TODO: fukc u 2: electric boogaloo
+/**
+ * Finds the best move by searching up to the given depth. If we
+ * use all of the alloted time (> team03_maxTime ms), returns a
+ * pair with position (-2, -2).
+ *
+ * @param state the current board state
+ * @param color the current color being considered
+ * @param layer the number of layers to search through
+ * @param alpha the alpha
+ * @param beta the beta
+ *
+ * @return the best move
+ */
 solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, int beta);
 
 /**
