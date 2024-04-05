@@ -95,7 +95,7 @@ int team03_computeMobility(board_t state, int color) {
     // Loop over all cell positions
     pos_t pos = team03_makePos(0, 0);
     for (; pos.y < 8; pos.y++) {
-        for (; pos.x < 8; pos.x++) {
+        for (pos.x = 0; pos.x < 8; pos.x++) {
             // Update our valid move count if we found one
             res += team03_isValidMove(state, pos, color);
         }
@@ -113,25 +113,24 @@ int team03_computeMobility(board_t state, int color) {
  * @return a relative score for the current board state
  */
 int team03_evaluateStatic(board_t state, int color) {
-    int moves = 0;
-    int otherMoves = 0;
-    for (int r = 0; r < 8; r++) {
-        for (int c = 0; c < 8; c++) {
-            pos_t pos = team03_makePos(r, c);
-            if (!team03_boardEquals(state, team03_executeMove(state, pos, color))) moves++;
-            if (!team03_boardEquals(state, team03_executeMove(state, pos, color ^ 1))) otherMoves++;
-        }
-    }
-    int score = moves - otherMoves;
+    int score = team03_computeMobility(state, color) - team03_computeMobility(state, !color);
 
-    int corners[4][2] = {{0, 0}, {0, 7}, {7, 7}, {7, 0}};
+    const pos_t corners[4] = {{0, 0}, {0, 7}, {7, 7}, {7, 0}};
     for (int i = 0; i < 4; i++) {
-        if (team03_getColor(state, team03_makePos(corners[i][0], corners[i][1])) == color) score += 4;
+        if (team03_getPiece(state, corners[i]) == color) score += 4;
     }
-    int adjCorners[12][2] = {{0, 1}, {1, 1}, {1, 0}, {0, 6}, {1, 6}, {1, 7}, {7, 6}, {6, 6}, {6, 7}, {7, 1}, {6, 1}, {6, 0}};
+    /*
+    const pos_t adjCorners[12] = {{0, 1}, {1, 1}, {1, 0}, {0, 6}, {1, 6}, {1, 7}, {7, 6}, {6, 6}, {6, 7}, {7, 1}, {6, 1}, {6, 0}};
     for (int i = 0; i < 12; i++) {
-        if (team03_getColor(state, team03_makePos(adjCorners[i][0], adjCorners[i][1])) == color) score -= 3;
+        pos_t corn;
+        if (adjCorners[i].x <= 1) corn.x = 0;
+        else corn.x = 7;
+        if (adjCorners[i].y <= 1) corn.y = 0;
+        else corn.y = 7;
+        if (team03_getPiece(state, adjCorners[i]) == color &&
+            team03_getPiece(state, corn) != color) score -= 3;
     }
+    */
 
     return score;
 }
@@ -143,24 +142,9 @@ int team03_evaluateStatic(board_t state, int color) {
  **********************
  */
 
-// TODO: ben pls write doc comments :(
-// TODO: fukc u
-
-
-
 pos_t team03_iterate(board_t state, int color) {
     solvePair_t moveList[64];
-    int ind = 0;
-    for (int r = 0; r < 8; r++) {
-        for (int c = 0; c < 8; c++) {
-            pos_t pos = team03_makePos(r, c);
-            if (!team03_boardEquals(state, team03_executeMove(state, pos, color))) {
-                solvePair_t pair = team03_makeSolvePair(pos, 0);
-                moveList[ind] = pair;
-                ind++;
-            }
-        }
-    }
+    int ind = team03_getMoveScores(state, color, moveList, 0);
     
     int layers = 1;
     
@@ -175,8 +159,7 @@ pos_t team03_iterate(board_t state, int color) {
         
         for (int i = 0; i < ind; i++) {
             solvePair_t pair = moveList[i];
-            solvePair_t pair2 = team03_solveBoard(team03_executeMove(state, pair.pos, color), color ^ 1, layers - 1,
-                                                  -beta, -alpha);
+            solvePair_t pair2 = team03_solveBoard(team03_executeMove(state, pair.pos, color), color ^ 1, layers - 1, -beta, -alpha);
             int score = 0 - pair2.score;
             moveList[i].score = score;
             if (score > best) {
@@ -205,49 +188,45 @@ solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, in
         return team03_makeSolvePair(pos, score);
     }
     
-    int best = -1e9;
-    pos_t bestPos = team03_makePos(-1, -1);
-    int iCanPlay = 0;
-    int otherCanPlay = 0;
-    for (int r = 0; r < 8; r++) {
-        for (int c = 0; c < 8; c++) {
-            pos_t pos = team03_makePos(r, c);
-            if (!team03_boardEquals(state, team03_executeMove(state, pos, color ^ 1))) otherCanPlay = 1;
-            board_t nState = team03_executeMove(state, pos, color);
-            if (team03_boardEquals(state, nState)) continue;
-            iCanPlay = 1;
-            solvePair_t pair = team03_solveBoard(nState, color ^ 1, layer - 1, -beta, -alpha);
-            int score = 0 - pair.score;
-            if (score > best) {
-                best = score;
-                bestPos = pos;
-            }
-            if (score > alpha) alpha = score;
-            if (alpha >= beta) {
-                solvePair_t pair = team03_makeSolvePair(bestPos, alpha);
-                return pair;
-            }
-            
-        }
-    }
+    solvePair_t pairs[64];
+    int num = team03_getMoveScores(state, color, pairs, 0);
     
-    if (!iCanPlay) {
-        if (otherCanPlay) {
+    if (num == 0) {
+        num = team03_getMoveScores(state, !color, pairs, 0);
+        if (num) {
             solvePair_t ret = team03_solveBoard(state, color ^ 1, layer - 1, -beta, -alpha);
             ret.score = 0 - ret.score;
             return ret;
-        } else {
-            int score;
-            if (team03_count(state, color) > team03_count(state, color ^ 1)) score = 1e8;
-            else if (team03_count(state, color) < team03_count(state, color ^ 1)) score = -1e8;
-            else score = 0;
-            pos_t pos = team03_makePos(-1, -1);
-            solvePair_t ret = team03_makeSolvePair(pos, score);
-            return ret;
+        }
+
+        int score;
+        if (team03_count(state, color) > team03_count(state, color ^ 1)) score = 1e8;
+        else if (team03_count(state, color) < team03_count(state, color ^ 1)) score = -1e8;
+        else score = 0;
+
+        pos_t pos = team03_makePos(-1, -1);
+        solvePair_t ret = team03_makeSolvePair(pos, score);
+        return ret;   
+    }
+
+    int best = -1e9;
+    pos_t bestPos = team03_makePos(-1, -1);
+
+    for (int i = 0; i < num; i++) {
+        board_t cur = team03_executeMove(state, pairs[i].pos, color);
+        solvePair_t oppSolve = team03_solveBoard(cur, !color, layer - 1, -beta, -alpha);
+
+        int score = 0 - oppSolve.score;
+        if (score > best) {
+            best = score;
+            bestPos = pairs[i].pos;
+        }
+        if (score > alpha) alpha = score;
+        if (alpha >= beta) {
+            solvePair_t pair = team03_makeSolvePair(bestPos, alpha);
+            return pair;
         }
     }
-    
-    //printf("%d %d\n", best, layer);
     
     solvePair_t pair = team03_makeSolvePair(bestPos, best);
     return pair;
@@ -259,46 +238,35 @@ solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, in
  * state, outputting a list pairing move positions with their static
  * scores in descending order of value.
  * <br/><br/>
- *
- * Accepts inclusive bounds [min, max] for valid scores. If *any*
- * score found is outside these bounds, immediately stops searching
- * and returns -1. The passed array will still have been modified.
+ * If evaluate is 0, instead just gets the moves that are valid.
  *
  * @param state the current board state
  * @param color the color to check moves for
- * @param min the minimum score for valid move bounds; any move with
- *          a score \< min will break out and return -1 and set the
- *          output pointer to null
- * @param max the maximum score for valid move bounds; any move with
- *          a score \> max will break out and return -1 and set the
- *          output pointer to null
  * @param arr a pointer to an array solvePair_t[64]
- *
+ * @param evaluate whether to evaluate and sort the move list before returning
+ * 
  * @return the result array size, or -1 if any move score was found outside of [min, max]
  */
-int team03_getMoveScores(board_t state, int color, int min, int max, solvePair_t *arr) {
+int team03_getMoveScores(board_t state, int color, solvePair_t *arr, int evaluate) {
     // # of valid moves we've found
     int num = 0;
     
     // Loop over all cell positions
     pos_t pos = team03_makePos(0, 0);
     for (; pos.y < 8; pos.y++) {
-        for (; pos.x < 8; pos.x++) {
+        for (pos.x = 0; pos.x < 8; pos.x++) {
             // Execute this move; skip if its invalid
             board_t cur = team03_executeMove(state, pos, color);
             if (team03_boardEquals(state, cur)) continue;
             
             // Compute the score for this move
-            int score = team03_evaluateStatic(state, color);
-            
-            // Prune the shit. Or don't lol
-            if (score < min || score > max) return -1;
+            int score = evaluate ? team03_evaluateStatic(state, color) : 0;
             arr[num++] = team03_makeSolvePair(pos, score);
         }
     }
     
     // Sort the output array
-    team03_sort(arr, 0, num - 1);
+    if (num > 0 && evaluate) team03_sort(arr, 0, num - 1);
     return num;
 }
 

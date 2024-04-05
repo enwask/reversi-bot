@@ -171,24 +171,16 @@ solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, in
  * state, outputting a list pairing move positions with their static
  * scores in descending order of value.
  * <br/><br/>
- *
- * Accepts inclusive bounds [min, max] for valid scores. If *any*
- * score found is outside these bounds, immediately stops searching
- * and returns -1. The passed array will still have been modified.
+ * If evaluate is 0, instead just gets the moves that are valid.
  *
  * @param state the current board state
  * @param color the color to check moves for
- * @param min the minimum score for valid move bounds; any move with
- *          a score \< min will break out and return -1 and set the
- *          output pointer to null
- * @param max the maximum score for valid move bounds; any move with
- *          a score \> max will break out and return -1 and set the
- *          output pointer to null
  * @param arr a pointer to an array solvePair_t[64]
- *
+ * @param evaluate whether to evaluate and sort the move list before returning
+ * 
  * @return the result array size, or -1 if any move score was found outside of [min, max]
  */
-int team03_getMoveScores(board_t state, int color, int min, int max, solvePair_t *arr);
+int team03_getMoveScores(board_t state, int color, solvePair_t *arr, int evaluate);
 
 
 /*

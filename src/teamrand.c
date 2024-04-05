@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "teamrand.h"
+#include "teamnaive.h"
 #include <time.h>
 
 

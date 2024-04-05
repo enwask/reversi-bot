@@ -55,7 +55,7 @@ pos_t teamnaive_getMove(board_t state, int color, int time) {
 
 
 int teamnaive_evalBoard(board_t state, int color) {
-    return teamnaive_count(state, color);
+    return teamnaive_count(state, color) + (rand() % 2);
 }
 
 

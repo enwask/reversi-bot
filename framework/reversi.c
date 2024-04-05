@@ -298,7 +298,7 @@ int play(enum piece ourColor) {
             
             // Do the move and time it.
             int startT = time(0);
-            mymove = teamrandMove(board, player, whiteTime);
+            mymove = teamnaiveMove(board, player, whiteTime);
             int endT = time(0);
             
             // Update time.
@@ -405,5 +405,5 @@ void test() {
         }
         if (i % 10 == 0) printf("%d\n", i);
     }
-    printf("us (team03): %d\nthem (rand): %d\ntied: %d\n", us, them, tie);
+    printf("us (team03): %d\nthem (naive): %d\ntied: %d\n", us, them, tie);
 }
