@@ -2,7 +2,7 @@
 #define REVERSI_H_INCLUDED
 
 #include "reversi_functions.h"
-#define MAXTIME 40
+#define MAXTIME 180
 
 void humanVHuman();
 void humanVComputer();

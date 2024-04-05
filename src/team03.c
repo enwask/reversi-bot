@@ -1,6 +1,16 @@
 #include <stdio.h>
+#include <time.h>
 #include <stdlib.h>
 #include "team03.h"
+
+/*
+ **********************
+ * Globals hee hee    *
+ **********************
+ */
+
+clock_t team03_startTime;
+const long long team03_maxTime = 6000;
 
 
 /*
@@ -44,8 +54,7 @@ position *team03Move(const enum piece board[][SIZE], enum piece mine, int second
  * @return the position we placed a piece at
  */
 pos_t team03_getMove(board_t state, int color, int time) {
-    //team03_print(state);
-    //printf("\nBlack has %d pieces\nWhite has %d pieces\n\n", team03_count(state, 0), team03_count(state, 1));
+    team03_startTime = clock();
     pos_t pos = team03_iterate(state, color);
     return pos;
 }
@@ -149,6 +158,7 @@ pos_t team03_iterate(board_t state, int color) {
     int layers = 1;
     
     pos_t bestPos;
+    pos_t retPos;
     
     while (1) {
         int best = -1e9;
@@ -160,6 +170,7 @@ pos_t team03_iterate(board_t state, int color) {
         for (int i = 0; i < ind; i++) {
             solvePair_t pair = moveList[i];
             solvePair_t pair2 = team03_solveBoard(team03_executeMove(state, pair.pos, color), color ^ 1, layers - 1, -beta, -alpha);
+            if (pair2.pos.x == -2) return retPos;
             int score = 0 - pair2.score;
             moveList[i].score = score;
             if (score > best) {
@@ -176,12 +187,21 @@ pos_t team03_iterate(board_t state, int color) {
         team03_sort(moveList, 0, ind - 1);
 
         layers++;
-        if (layers == 6) break;
+        retPos = bestPos;
+        if (layers == 100) break;
     }
-    return bestPos;
+    return retPos;
 }
 
 solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, int beta) {
+    if (layer == 2) {
+        clock_t endTime = clock();
+        if (1000 * (endTime - team03_startTime) > team03_maxTime * CLOCKS_PER_SEC) {
+            solvePair_t pair = team03_makeSolvePair(team03_makePos(-2, -2), 0);
+            return pair;
+        }
+    }
+
     if (layer == 0) {
         int score = team03_evaluateStatic(state, color);
         pos_t pos = team03_makePos(-1, -1);
@@ -215,6 +235,7 @@ solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, in
     for (int i = 0; i < num; i++) {
         board_t cur = team03_executeMove(state, pairs[i].pos, color);
         solvePair_t oppSolve = team03_solveBoard(cur, !color, layer - 1, -beta, -alpha);
+        if (oppSolve.pos.x == -2) return oppSolve;
 
         int score = 0 - oppSolve.score;
         if (score > best) {

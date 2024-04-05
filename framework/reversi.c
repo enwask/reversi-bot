@@ -285,12 +285,16 @@ int play(enum piece ourColor) {
             
             // Do the move and time it.
             int startT = time(0);
+            clock_t clock_start = clock();
             mymove = team03Move(board, player, blackTime);
+            clock_t clock_end = clock();
             int endT = time(0);
+            long long ms = (1000.0 * (clock_end - clock_start)) / CLOCKS_PER_SEC;
+            printf("We took %d ms\n", ms);
             
             // Update time.
             blackTime = blackTime - (endT - startT);
-            //printf("The black team selected row %d, column %d\n", mymove->x, mymove->y);
+            printf("We selected row %d, column %d\n", mymove->x, mymove->y);
         }
             
             // White Computer Player
@@ -303,7 +307,7 @@ int play(enum piece ourColor) {
             
             // Update time.
             whiteTime = whiteTime - (endT - startT);
-            //printf("The white team selected row %d, column %d\n", mymove->x, mymove->y);
+            printf("Dumbass selected row %d, column %d\n", mymove->x, mymove->y);
         }
         
         // Execute then free move.
@@ -312,20 +316,20 @@ int play(enum piece ourColor) {
         
         // Black ran out of time.
         if (blackTime < 0) {
-            //printf("Sorry, the Black Player ran out of time and loses automatically.\n");
+            printf("Sorry, the Black Player ran out of time and loses automatically.\n");
             blackOutOfTime = TRUE;
             break;
         }
         
         // White ran out of time.
         if (whiteTime < 0) {
-            //printf("Sorry, the White Player ran out of time and loses automatically.\n");
+            printf("Sorry, the White Player ran out of time and loses automatically.\n");
             whiteOutOfTime = TRUE;
             break;
         }
         
         // Print the result and go to the other player.
-        //printBoard(board);
+        printBoard(board);
         player = opposite(player);
         
         // This waits about one second, so we can see the moves scrolling.
@@ -345,13 +349,15 @@ int play(enum piece ourColor) {
         
         // Output the result.
         if (blackScore > whiteScore) {
-            //printf("Black wins by %d points.\n", blackScore - whiteScore);
+            if (ourColor == BLACK) printf("We win by %d points.\n", blackScore - whiteScore);
+            else printf("They win by %d points.\n", blackScore - whiteScore);
             return 2;
         } else if (whiteScore > blackScore) {
-            //printf("White wins by %d points.\n", whiteScore - blackScore);
+            if (ourColor == BLACK) printf("We win by %d points.\n", whiteScore - blackScore);
+            else printf("They win by %d points.\n", whiteScore - blackScore);
             return 0;
         } else {
-            //printf("It's a tie!\n");
+            printf("It's a tie!\n");
             return 1;
         }
     }
@@ -395,7 +401,8 @@ void test() {
 //    int black = 0;
 //    int white = 0;
     for (int i = 1; i <= 100; i++) {
-        enum piece ourColor = (i % 2) ? WHITE : BLACK;
+        enum piece ourColor = (rand() % 2) ? WHITE : BLACK;
+        printf("We are playing %s\n", ourColor == WHITE ? "white" : "black");
         int res = play(ourColor);
         if (res == 1) tie++;
         else {
