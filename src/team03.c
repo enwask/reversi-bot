@@ -689,18 +689,14 @@ board_t team03_executeMove(board_t state, pos_t pos, int color) {
  * @param dy column/x component of the direction for this partial move
  */
 void team03_executeMovePartial(board_t *state, pos_t start, int color, int8_t dy, int8_t dx) {
-//    printf("\ndy = %d, dx = %d, col = %d\n", dy, dx, col);
-    
     // Loop over the run we're looking at
     pos_t end = team03_makePos(start.y + dy, start.x + dx);
     for (; team03_inBounds(end); end.y += dy, end.x += dx) {
         int piece = team03_getPiece(*state, end);
-//        printf("(y, x) = (%d, %d) -> %d\n", end.y, end.x, piece);
         if (piece == !color) continue; // if the opponent has a piece here, keep going
         
         // If the cell is empty and |run| > 1, flip this range
         if (piece == color && (end.y != start.y + dy || end.x != start.x + dx)) {
-//            printf("Setting run (%d, %d) -> (%d, %d)\n", start.y, start.x, end.y, end.x);
             team03_setPieces(state, start, end, color);
         }
         
