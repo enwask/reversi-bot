@@ -173,7 +173,7 @@ pos_t team03_iterate(board_t state, int color);
 
 /**
  * Finds the best move by searching up to the given depth. If we
- * use all of the alloted time (> team03_maxTime ms), returns a
+ * use all of the allotted time (> team03_maxTime ms), returns a
  * pair with position (-2, -2).
  *
  * @param state the current board state
@@ -200,7 +200,7 @@ solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, in
  * 
  * @return the result array size, or -1 if any move score was found outside of [min, max]
  */
-int team03_getMoveScores(board_t state, int color, solvePair_t *arr, int evaluate);
+int team03_getMoves(board_t state, int color, solvePair_t *arr, int evaluate);
 
 
 /*
