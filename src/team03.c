@@ -125,12 +125,11 @@ long long team03_allocateTime(board_t state, int color, int timeLeft) {
     int numPieces = team03_count(state, color)
                     + team03_count(state, !color);
     
-    // Scale amount of time up to 5s for the first few moves
-    long long time = (numPieces / 2 - 1) * 1000ll;
-    if (time > 5000) time = 5000;
+    // 500ms for first four moves
+    if (numPieces <= 11) return 500;
     
-    // Return the time we decided on
-    return time;
+    // Otherwise use six seconds
+    return 6000;
 }
 
 /**
