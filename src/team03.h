@@ -227,7 +227,7 @@ void team03_print(board_t state);
  *
  * @return the described mask
  */
-__inline__ uint64_t team03_getPieces(board_t state, int color);
+uint64_t team03_getPieces(board_t state, int color);
 
 /**
  * Checks if there is a piece at the position and returns its color
@@ -238,7 +238,7 @@ __inline__ uint64_t team03_getPieces(board_t state, int color);
  *
  * @return the color of the piece (1 or 0) if there is one present; otherwise, -1.
  */
-__inline__ int team03_getPiece(board_t state, pos_t pos);
+int team03_getPiece(board_t state, pos_t pos);
 
 /**
  * Checks if there is a piece of any color at the given position.
@@ -248,7 +248,7 @@ __inline__ int team03_getPiece(board_t state, pos_t pos);
  *
  * @return 1 if there is a piece at the given position; otherwise 0
  */
-__inline__ int team03_hasPiece(board_t state, pos_t pos);
+int team03_hasPiece(board_t state, pos_t pos);
 
 /**
  * Gets the color of a piece at the given position. If there is no
@@ -259,7 +259,7 @@ __inline__ int team03_hasPiece(board_t state, pos_t pos);
  *
  * @return the color of the piece at the given position (0/1 for black/white)
  */
-__inline__ int team03_getColor(board_t state, pos_t pos);
+int team03_getColor(board_t state, pos_t pos);
 
 /**
  * Sets the piece at the given position to the given color.
@@ -269,7 +269,7 @@ __inline__ int team03_getColor(board_t state, pos_t pos);
  * @param pos the position to set the piece at
  * @param color the color to set the piece to
  */
-__inline__ void team03_setPiece(board_t *state, pos_t pos, int color);
+void team03_setPiece(board_t *state, pos_t pos, int color);
 
 /**
  * Counts all pieces on the board with the given color.
@@ -279,7 +279,7 @@ __inline__ void team03_setPiece(board_t *state, pos_t pos, int color);
  *
  * @return the number of pieces on the board with the given color
  */
-__inline__ int team03_count(board_t state, int color);
+int team03_count(board_t state, int color);
 
 /**
  * Checks if the given board states are equal.
@@ -289,7 +289,7 @@ __inline__ int team03_count(board_t state, int color);
  *
  * @return 1 if the board states are the same; 0 otherwise.
  */
-__inline__ int team03_boardEquals(board_t state1, board_t state2);
+int team03_boardEquals(board_t state1, board_t state2);
 
 /**
  * Checks if the states of the given positions are equal.
@@ -300,7 +300,7 @@ __inline__ int team03_boardEquals(board_t state1, board_t state2);
  * @return 1 if the cells have the same state (on-ness and color);
  * 0 otherwise.
  */
-__inline__ int team03_pieceEquals(board_t state, pos_t pos1, pos_t pos2);
+int team03_pieceEquals(board_t state, pos_t pos1, pos_t pos2);
 
 
 /*
@@ -482,7 +482,7 @@ solvePair_t team03_makeSolvePair(pos_t pos, int score);
  *
  * @return an integer in [0, 63]: the index of the bit for the given position
  */
-__inline__ int8_t team03_getIndex(int8_t y, int8_t x);
+int8_t team03_getIndex(int8_t y, int8_t x);
 
 /**
  * Checks whether the given bit is on.
@@ -492,7 +492,7 @@ __inline__ int8_t team03_getIndex(int8_t y, int8_t x);
  *
  * @return 1 if the bit at the given index is on; 0 otherwise.
  */
-__inline__ int team03_getBit(uint64_t mask, int8_t ind);
+int team03_getBit(uint64_t mask, int8_t ind);
 
 /**
  * Sets the bit at the given index to the given value.
@@ -501,7 +501,7 @@ __inline__ int team03_getBit(uint64_t mask, int8_t ind);
  * @param ind the index of the bit to modify
  * @param value 0 to set the bit off; any other value to set it on
  */
-__inline__ void team03_setBit(uint64_t *mask, int8_t ind, int value);
+void team03_setBit(uint64_t *mask, int8_t ind, int value);
 
 /**
  * Convenience function for checking whether a bit is on by
@@ -512,7 +512,7 @@ __inline__ void team03_setBit(uint64_t *mask, int8_t ind, int value);
  *
  * @return 1 if the bit at pos is on, 0 otherwise
  */
-__inline__ int team03_getBitAt(uint64_t mask, pos_t pos);
+int team03_getBitAt(uint64_t mask, pos_t pos);
 
 /**
  * Convenience function for setting the bit by its position.
@@ -521,7 +521,7 @@ __inline__ int team03_getBitAt(uint64_t mask, pos_t pos);
  * @param pos the position of the bit to set
  * @param value 0 to turn the bit off; any other value to turn it on
  */
-__inline__ void team03_setBitAt(uint64_t *mask, pos_t pos, int value);
+void team03_setBitAt(uint64_t *mask, pos_t pos, int value);
 
 /**
  * Creates a mask with a range of bits between `start` and `end` asserted.
@@ -531,7 +531,7 @@ __inline__ void team03_setBitAt(uint64_t *mask, pos_t pos, int value);
  *
  * @return the described mask
  */
-__inline__ uint64_t team03_rangeMask(int8_t start, int8_t end);
+uint64_t team03_rangeMask(int8_t start, int8_t end);
 
 /**
  * Counts the number of set bits in the given integer.
@@ -540,6 +540,6 @@ __inline__ uint64_t team03_rangeMask(int8_t start, int8_t end);
  *
  * @return the number of bits that are on in `num`
  */
-__inline__ int team03_popcount(uint64_t num);
+int team03_popcount(uint64_t num);
 
 #endif // TEAM03_H
