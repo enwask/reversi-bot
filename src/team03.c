@@ -21,7 +21,8 @@
 // If available, enable the O2 optimization level
 #ifdef GCC_OPTIM_AVAILABLE
 #   pragma GCC push_options
-#   pragma GCC optimize("O2")
+#   pragma GCC optimize("O2") // use higher optimization level
+#   pragma GCC target("popcnt") // use HW instruction for popcount
 #endif // GCC_OPTIM_AVAILABLE
 
 
@@ -178,8 +179,8 @@ int team03_evaluateStatic(board_t state, int color) {
             {7, 0}
     };
     
-    // Corner weight starts at 4; goes up by 2 for every 8 moves
-    int cornerWeight = 4 + (team03_getMoveNum(state, color) / 8) * 2;
+    // Corner weight starts at 4; goes up by 4 every 8 turns
+    int cornerWeight = 4 + (team03_getTurnNum(state, color) / 8) * 4;
     for (int i = 0; i < 4; i++) {
         if (team03_getPiece(state, corners[i]) == color) score += 4;
     }
@@ -494,7 +495,7 @@ void team03_print(board_t state) {
  *
  * @return the described mask
  */
-uint64_t team03_getPieces(board_t state, int color) {
+__inline__ uint64_t team03_getPieces(board_t state, int color) {
     // Compute a mask for the requested color
     uint64_t color_mask = color ? state.color : ~state.color;
     return state.on & color_mask; // filter placed pieces by the color
@@ -509,7 +510,7 @@ uint64_t team03_getPieces(board_t state, int color) {
  *
  * @return the color of the piece (1 or 0) if there is one present; otherwise, -1.
  */
-int team03_getPiece(board_t state, pos_t pos) {
+__inline__ int team03_getPiece(board_t state, pos_t pos) {
     if (!team03_hasPiece(state, pos)) return -1;
     return team03_getColor(state, pos);
 }
@@ -522,7 +523,7 @@ int team03_getPiece(board_t state, pos_t pos) {
  *
  * @return 1 if there is a piece at the given position; otherwise 0
  */
-int team03_hasPiece(board_t state, pos_t pos) {
+__inline__ int team03_hasPiece(board_t state, pos_t pos) {
     int8_t ind = team03_getIndexByPos(pos);
     return team03_getBit(state.on, ind);
 }
@@ -536,7 +537,7 @@ int team03_hasPiece(board_t state, pos_t pos) {
  *
  * @return the color of the piece at the given position (0/1 for black/white)
  */
-int team03_getColor(board_t state, pos_t pos) {
+__inline__ int team03_getColor(board_t state, pos_t pos) {
     int8_t ind = team03_getIndexByPos(pos);
     return team03_getBit(state.color, ind);
 }
@@ -549,7 +550,7 @@ int team03_getColor(board_t state, pos_t pos) {
  * @param pos the position to set the piece at
  * @param color the color to set the piece to
  */
-void team03_setPiece(board_t *state, pos_t pos, int color) {
+__inline__ void team03_setPiece(board_t *state, pos_t pos, int color) {
     int8_t ind = team03_getIndexByPos(pos);
     team03_setBit(&state->on, ind, 1);
     team03_setBit(&state->color, ind, color);
@@ -563,7 +564,7 @@ void team03_setPiece(board_t *state, pos_t pos, int color) {
  *
  * @return the number of pieces on the board with the given color
  */
-int team03_count(board_t state, int color) {
+__inline__ int team03_count(board_t state, int color) {
     // Count the number of set bits in the mask for this piece color
     return team03_popcount(team03_getPieces(state, color));
 }
@@ -590,7 +591,7 @@ int team03_count(board_t state, int color) {
  *
  * @return 1 if the board states are the same; 0 otherwise.
  */
-int team03_boardEquals(board_t state1, board_t state2) {
+__inline__ int team03_boardEquals(board_t state1, board_t state2) {
     return state1.on == state2.on && state1.color == state2.color;
 }
 
@@ -603,7 +604,7 @@ int team03_boardEquals(board_t state1, board_t state2) {
  * @return 1 if the cells have the same state (on-ness and color);
  * 0 otherwise.
  */
-int team03_pieceEquals(board_t state, pos_t pos1, pos_t pos2) {
+__inline__ int team03_pieceEquals(board_t state, pos_t pos1, pos_t pos2) {
     int a = team03_hasPiece(state, pos1);
     int b = team03_hasPiece(state, pos2);
     
@@ -960,17 +961,17 @@ long long team03_timeSinceMs(struct timeval start) {
 }
 
 /**
- * Gets the number of our current move (1 + the number
- * of moves we've taken so far)
+ * Gets the approximate turn number from a piece count
  *
  * @param state the current board state
  * @param color the color to count moves for
  *
- * @return the number of moves we've taken (# pieces - 4) + 1
+ * @return the approximate turn number (starts at 1)
  */
-int team03_getMoveNum(board_t state, int color) {
-    int num = team03_count(state, color);
-    return num - 4 + 1;
+int team03_getTurnNum(board_t state, int color) {
+    int num = team03_count(state, color)
+              + team03_count(state, !color);
+    return (num - 4) / 2 + 1;
 }
 
 
@@ -989,7 +990,7 @@ int team03_getMoveNum(board_t state, int color) {
  *
  * @return 1 if the bit at pos is on, 0 otherwise
  */
-int team03_getBitAt(uint64_t mask, pos_t pos) {
+__inline__ int team03_getBitAt(uint64_t mask, pos_t pos) {
     return team03_getBit(mask, team03_getIndexByPos(pos));
 }
 
@@ -1000,7 +1001,7 @@ int team03_getBitAt(uint64_t mask, pos_t pos) {
  * @param pos the position of the bit to set
  * @param value 0 to turn the bit off; any other value to turn it on
  */
-void team03_setBitAt(uint64_t *mask, pos_t pos, int value) {
+__inline__ void team03_setBitAt(uint64_t *mask, pos_t pos, int value) {
     team03_setBit(mask, team03_getIndexByPos(pos), value);
 }
 
@@ -1009,7 +1010,14 @@ void team03_setBitAt(uint64_t *mask, pos_t pos, int value) {
  *
  * @return an integer in [0, 63]: the index of the bit for the given position
  */
-int8_t team03_getIndex(int8_t y, int8_t x) { return y * 8 + x; }
+__inline__ int8_t
+team03_getIndex(int8_t
+                y,
+                int8_t x
+) {
+    return y * 8 +
+           x;
+}
 
 /**
  * Checks whether the given bit is on.
@@ -1019,7 +1027,7 @@ int8_t team03_getIndex(int8_t y, int8_t x) { return y * 8 + x; }
  *
  * @return 1 if the bit at the given index is on; 0 otherwise.
  */
-int team03_getBit(uint64_t mask, int8_t ind) {
+__inline__ int team03_getBit(uint64_t mask, int8_t ind) {
     uint64_t check = ((uint64_t) 1) << ind;
     return (mask & check) != 0;
 }
@@ -1031,7 +1039,7 @@ int team03_getBit(uint64_t mask, int8_t ind) {
  * @param ind the index of the bit to modify
  * @param value 0 to set the bit off; any other value to set it on
  */
-void team03_setBit(uint64_t *mask, int8_t ind, int value) {
+__inline__ void team03_setBit(uint64_t *mask, int8_t ind, int value) {
     uint64_t set = ((uint64_t) 1) << ind;
     
     if (value) *mask |= set;
@@ -1046,10 +1054,15 @@ void team03_setBit(uint64_t *mask, int8_t ind, int value) {
  *
  * @return the described mask
  */
-uint64_t team03_rangeMask(int8_t start, int8_t end) {
+__inline__ uint64_t
+team03_rangeMask(int8_t
+                 start,
+                 int8_t end
+) {
     uint64_t mask = 1ull << (end - start);
     mask <<= 1, mask--;
-    return mask << start;
+    return mask <<
+                start;
 }
 
 /**
@@ -1059,7 +1072,7 @@ uint64_t team03_rangeMask(int8_t start, int8_t end) {
  *
  * @return the number of bits that are on in `num`
  */
-int team03_popcount(uint64_t num) {
+__inline__ int team03_popcount(uint64_t num) {
 #ifdef __has_builtin
 #   if __has_builtin(__builtin_popcountll)
 #       define popcount(x) __builtin_popcountll(x)
