@@ -305,13 +305,11 @@ pos_t team03_iterate(board_t state, int color) {
  * @return the best move
  */
 solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, int beta) {
-    // Check for a timeout every few layers of the search
-    if (layer % 3 == 0) {
-        long long taken = team03_timeSinceMs(team03_startTime);
-        if (taken >= team03_maxTime) {
-            solvePair_t pair = team03_makeSolvePair(team03_makePos(-2, -2), 0);
-            return pair;
-        }
+    // Check for a timeout
+    long long taken = team03_timeSinceMs(team03_startTime);
+    if (taken >= team03_maxTime) {
+        solvePair_t pair = team03_makeSolvePair(team03_makePos(-2, -2), 0);
+        return pair;
     }
     
     // If we're at a leaf, return our best move at this level
