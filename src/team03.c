@@ -5,7 +5,7 @@
  */
 
 // Enable/disable debug messages
-#define TEAM03_DEBUG 1
+#define TEAM03_DEBUG 0
 
 // Define color codes for debug printing
 #if TEAM03_DEBUG
@@ -182,7 +182,7 @@ int team03_evaluateStatic(board_t state, int color) {
     // Corner weight starts at 4; goes up by 4 every 8 turns
     int cornerWeight = 4 + (team03_getTurnNum(state, color) / 8) * 4;
     for (int i = 0; i < 4; i++) {
-        if (team03_getPiece(state, corners[i]) == color) score += 4;
+        if (team03_getPiece(state, corners[i]) == color) score += cornerWeight;
     }
     /*
     const pos_t adjCorners[12] = {{0, 1}, {1, 1}, {1, 0}, {0, 6}, {1, 6}, {1, 7}, {7, 6}, {6, 6}, {6, 7}, {7, 1}, {6, 1}, {6, 0}};
@@ -221,10 +221,10 @@ pos_t team03_iterate(board_t state, int color) {
     solvePair_t moveList[64];
     int num = team03_getMoves(state, color, moveList, 1);
 
-#ifdef TEAM03_DEBUG
+#if TEAM03_DEBUG
     // Print our status if debugging is on
     printf(ANSI_GREEN
-           "Our turn! We are %s (%c)\n%d moves available, max time: %lli ms.\n\n"
+           "Our turn! We are %s (%c)\n%d moves available, max time: %lli ms\n\n"
            ANSI_RESET, color ? "white" : "black", color ? 'O' : 'X', num, team03_maxTime);
 #endif
     
@@ -252,7 +252,7 @@ pos_t team03_iterate(board_t state, int color) {
             
             // If we ran out of time, return our current best position
             if (pair2.pos.x == -2) {
-#ifdef TEAM03_DEBUG
+#if TEAM03_DEBUG
                 // Print how much time we've taken
                 long long taken = team03_timeSinceMs(team03_startTime);
                 printf(ANSI_RED
