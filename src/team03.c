@@ -7,15 +7,21 @@
 // Enable/disable debug messages
 #define TEAM03_DEBUG 1
 
+// Define color codes for debug printing
+#if TEAM03_DEBUG
+#   define ANSI_RED "\x1b[31m"
+#   define ANSI_GREEN "\x1b[32m"
+#   define ANSI_RESET "\x1b[0m"
+#endif
+
 // Check if GCC optimizations are available
 #if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7) || defined(__clang__))
 #   define GCC_OPTIM_AVAILABLE
 #endif
-
 // If available, enable the O2 optimization level
 #ifdef GCC_OPTIM_AVAILABLE
 #   pragma GCC push_options
-#   pragma GCC optimize("-O2")
+#   pragma GCC optimize("O2")
 #endif // GCC_OPTIM_AVAILABLE
 
 
@@ -31,7 +37,7 @@
 #include <assert.h>
 #include "team03.h"
 
-const int team03_maxLayers = 32; // max depth of iterative search
+const int team03_maxLayers = 24; // max depth of iterative search
 long long team03_maxTime = 5000; // max time (ms) per move; overwritten later
 struct timeval team03_startTime; // start time of the current move
 
@@ -87,7 +93,9 @@ pos_t team03_getMove(board_t state, int color, int time) {
 #if TEAM03_DEBUG
     // Print how much time we took to pick a move, if debug is on
     long long took = team03_timeSinceMs(team03_startTime);
-    printf("team03_iterate took %lli ms.\n\n", took);
+    printf(ANSI_RED
+           "team03_iterate took %lli ms\n\n"
+           ANSI_RESET, took);
 #endif
     
     // Return the move we chose
@@ -113,37 +121,15 @@ pos_t team03_getMove(board_t state, int color, int time) {
  */
 long long team03_allocateTime(board_t state, int color, int timeLeft) {
     // Count pieces
-    int ourPieces = team03_count(state, color);
-    int oppPieces = team03_count(state, !color);
+    int numPieces = team03_count(state, color)
+                    + team03_count(state, !color);
     
-    // Scale amount of time up to 5s for our first few moves
-    long long time = (ourPieces - 1) * 1000;
+    // Scale amount of time up to 5s for the first few moves
+    long long time = (numPieces / 2 - 1) * 1000ll;
     if (time > 5000) time = 5000;
     
     // Return the time we decided on
     return time;
-}
-
-/**
- * Computes a rough estimate of the given color's mobility for the
- * current board state, by counting the number of cells that could
- * potentially be a valid move location (that is, empty cells that
- * are adjacent to at least one cell of the opponent's color).
- * <br/><br/>
- *
- * This estimate is definitionally an upper bound for the number
- * of valid moves.
- *
- * @param state the current board state
- * @param color the color to check mobility for
- *
- * @return the number of *potential* move locations
- */
-int team03_estimateMobility(board_t state, int color) {
-    // TODO: Implement mobility estimates when actual mobility is inevitably too slow
-    return -1;
-//    uint64_t adj_mask; // combined mask for cells adjacent to opposing pieces
-//    uint64_t opp_mask = team03_getPieces(state, !color); // mask of opponent's pieces
 }
 
 /**
@@ -236,7 +222,9 @@ pos_t team03_iterate(board_t state, int color) {
 
 #ifdef TEAM03_DEBUG
     // Print our status if debugging is on
-    printf("Our turn!\n%d moves available, max time: %lli ms.\n", num, team03_maxTime);
+    printf(ANSI_GREEN
+           "Our turn! We are %s (%c)\n%d moves available, max time: %lli ms.\n\n"
+           ANSI_RESET, color ? "white" : "black", color ? 'O' : 'X', num, team03_maxTime);
 #endif
     
     // If we don't have any moves, we shouldn't have gotten a move at all
@@ -247,12 +235,7 @@ pos_t team03_iterate(board_t state, int color) {
     pos_t retPos = bestPos;
     
     // Iteratively deepen the search
-    for (int layers = 0; layers <= team03_maxLayers; layers++) {
-#ifdef TEAM03_DEBUG
-        // Print how much time we've taken + the current search depth
-        long long taken = team03_timeSinceMs(team03_startTime);
-        printf("We've taken %lli ms.\nSearching to %d...\n\n", taken, layers);
-#endif
+    for (int layers = 1; layers <= team03_maxLayers; layers++) {
         
         // Track our best move and alpha/beta for this depth
         int best = -1e9, alpha = -1e9, beta = 1e9;
@@ -267,7 +250,16 @@ pos_t team03_iterate(board_t state, int color) {
                     color ^ 1, layers - 1, -beta, -alpha);
             
             // If we ran out of time, return our current best position
-            if (pair2.pos.x == -2) return retPos;
+            if (pair2.pos.x == -2) {
+#ifdef TEAM03_DEBUG
+                // Print how much time we've taken
+                long long taken = team03_timeSinceMs(team03_startTime);
+                printf(ANSI_RED
+                       "Timeout at depth ( %d ) after %lli ms.\n"
+                       ANSI_RESET, layers, taken);
+#endif
+                return retPos;
+            }
             
             // Update the move's score with the opponent's best move
             int score = 0 - pair2.score;
@@ -312,9 +304,8 @@ pos_t team03_iterate(board_t state, int color) {
  * @return the best move
  */
 solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, int beta) {
-    // If we're nearing a leaf, check that we haven't timed out
-    // TODO: this is fucking stupid
-    if (layer == 2) {
+    // Check for a timeout every few layers of the search
+    if (layer % 3 == 0) {
         long long taken = team03_timeSinceMs(team03_startTime);
         if (taken >= team03_maxTime) {
             solvePair_t pair = team03_makeSolvePair(team03_makePos(-2, -2), 0);

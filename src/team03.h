@@ -127,23 +127,6 @@ pos_t team03_getMove(board_t state, int color, int time);
 long long team03_allocateTime(board_t state, int color, int timeLeft);
 
 /**
- * Computes a rough estimate of the given color's mobility for the
- * current board state, by counting the number of cells that could
- * potentially be a valid move location (that is, empty cells that
- * are adjacent to at least one cell of the opponent's color).
- * <br/><br/>
- *
- * This estimate is definitionally an upper bound for the number
- * of valid moves.
- *
- * @param state the current board state
- * @param color the color to check mobility for
- *
- * @return the number of *potential* move locations
- */
-int team03_estimateMobility(board_t state, int color);
-
-/**
  * Computes the given color's mobility for the current board state,
  * counting the number of valid moves that color can take.
  *
