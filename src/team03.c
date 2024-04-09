@@ -15,7 +15,7 @@
 #   pragma GCC optimize("-O2")
 #else
 #   pragma message("GCC optimizations unavailable.")
-#endif
+#endif // GCC_OPTIM_AVAILABLE
 
 
 /*
@@ -142,8 +142,11 @@ int team03_computeMobility(board_t state, int color) {
  * @return a relative score for the current board state
  */
 int team03_evaluateStatic(board_t state, int color) {
-    int score = team03_computeMobility(state, color) - team03_computeMobility(state, !color);
+    // Calculate an overall mobility score
+    int score = team03_computeMobility(state, color)
+                - team03_computeMobility(state, !color);
     
+    // Weight the corners
     const pos_t corners[4] = {{0, 0},
                               {0, 7},
                               {7, 7},
@@ -188,28 +191,39 @@ pos_t team03_iterate(board_t state, int color) {
     solvePair_t moveList[64];
     int ind = team03_getMoves(state, color, moveList, 1);
     
+    // TODO: make sure these are initialized if we change when we do the timeout check
     int layers = 1;
     pos_t bestPos;
-    pos_t retPos;
+    pos_t retPos; // TODO: can we assume we have a move and initialize to moveList[0]?
     
+    // Iteratively deepen the search
     while (1) {
-        int best = -1e9;
+        // Track our best move and alpha/beta
+        int best = -1e9, alpha = -1e9, beta = 1e9;
         bestPos = team03_makePos(-1, -1);
         
-        int alpha = -1e9;
-        int beta = 1e9;
-        
+        // Iterate through valid moves for this position
         for (int i = 0; i < ind; i++) {
+            // DLS on the current move
             solvePair_t pair = moveList[i];
-            solvePair_t pair2 = team03_solveBoard(team03_executeMove(state, pair.pos, color), color ^ 1, layers - 1,
-                                                  -beta, -alpha);
+            solvePair_t pair2 = team03_solveBoard(
+                    team03_executeMove(state, pair.pos, color),
+                    color ^ 1, layers - 1, -beta, -alpha);
+            
+            // If we ran out of time, return our current best position
             if (pair2.pos.x == -2) return retPos;
+            
+            // Update the move's score with the opponent's best move
             int score = 0 - pair2.score;
             moveList[i].score = score;
+            
+            // Update our current best move
             if (score > best) {
                 best = score;
                 bestPos = pair.pos;
             }
+            
+            // Pruning or something
             if (score > alpha) alpha = score;
             if (alpha >= beta) {
                 best = alpha;
@@ -217,12 +231,15 @@ pos_t team03_iterate(board_t state, int color) {
             }
         }
         
+        // Sort our move list on the updated scores
         team03_sort(moveList, 0, ind - 1);
         
-        layers++;
-        retPos = bestPos;
-        if (layers >= team03_maxLayers) break;
+        // Increment our search depth
+        if (++layers >= team03_maxLayers) break;
+        retPos = bestPos; // update the position to return with our current best move
     }
+    
+    // Return the best move we found
     return retPos;
 }
 
@@ -240,6 +257,8 @@ pos_t team03_iterate(board_t state, int color) {
  * @return the best move
  */
 solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, int beta) {
+    // If we're nearing a leaf, check that we haven't timed out
+    // TODO: this is fucking stupid
     if (layer == 2) {
         clock_t endTime = clock();
         if (1000 * (endTime - team03_startTime) > team03_maxTime * CLOCKS_PER_SEC) {
@@ -248,46 +267,62 @@ solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, in
         }
     }
     
+    // If we're at a leaf, return our best move at this level
     if (layer == 0) {
         int score = team03_evaluateStatic(state, color);
         pos_t pos = team03_makePos(-1, -1);
         return team03_makeSolvePair(pos, score);
     }
     
+    // Find valid moves (without static eval)
     solvePair_t pairs[64];
     int num = team03_getMoves(state, color, pairs, 0);
     
+    // Check if there aren't any moves available for the current color
     if (num == 0) {
+        // Check if the opponent can move
         num = team03_getMoves(state, !color, pairs, 0);
         if (num) {
+            // If so, do the opponent move
             solvePair_t ret = team03_solveBoard(state, color ^ 1, layer - 1, -beta, -alpha);
             ret.score = 0 - ret.score;
             return ret;
         }
         
+        // Otherwise the game is over at this depth; set the score to inf/-inf for win/lose
         int score;
         if (team03_count(state, color) > team03_count(state, color ^ 1)) score = 1e8;
         else if (team03_count(state, color) < team03_count(state, color ^ 1)) score = -1e8;
         else score = 0;
         
+        // Return the thing
         pos_t pos = team03_makePos(-1, -1);
         solvePair_t ret = team03_makeSolvePair(pos, score);
         return ret;
     }
     
+    // Track our current best move
     int best = -1e9;
     pos_t bestPos = team03_makePos(-1, -1);
     
+    // Loop over valid moves for the current color
     for (int i = 0; i < num; i++) {
+        // Execute the current move and figure out the opponent's best move
         board_t cur = team03_executeMove(state, pairs[i].pos, color);
         solvePair_t oppSolve = team03_solveBoard(cur, !color, layer - 1, -beta, -alpha);
+        
+        // If we ran out of time, return the opponent's move
+        // TODO: ???
         if (oppSolve.pos.x == -2) return oppSolve;
         
+        // Update the best move
         int score = 0 - oppSolve.score;
         if (score > best) {
             best = score;
             bestPos = pairs[i].pos;
         }
+        
+        // Pruning or something
         if (score > alpha) alpha = score;
         if (alpha >= beta) {
             solvePair_t pair = team03_makeSolvePair(bestPos, alpha);
@@ -295,9 +330,9 @@ solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, in
         }
     }
     
+    // Return the best move we found
     solvePair_t pair = team03_makeSolvePair(bestPos, best);
     return pair;
-    
 }
 
 /**
@@ -965,4 +1000,4 @@ int team03_popcount(uint64_t num) {
 // Pop our optimization settings
 #ifdef GCC_OPTIM_AVAILABLE
 #   pragma GCC pop_options
-#endif
+#endif //GCC_OPTIM_AVAILABLE
