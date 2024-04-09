@@ -953,8 +953,9 @@ long long team03_timeSinceMs(struct timeval start) {
     gettimeofday(&now, 0);
     
     // Compute the elapsed time in microseconds
-    long long diff_usec = (now.tv_usec + 1000000ll * now.tv_sec)
-                          - (start.tv_usec + 1000000ll * start.tv_sec);
+    long long diff_usec =
+            (now.tv_usec + 1000000ll * now.tv_sec)
+            - (start.tv_usec + 1000000ll * start.tv_sec);
     
     // Return the elapsed time in ms
     return diff_usec / 1000;
@@ -1010,13 +1011,8 @@ __inline__ void team03_setBitAt(uint64_t *mask, pos_t pos, int value) {
  *
  * @return an integer in [0, 63]: the index of the bit for the given position
  */
-__inline__ int8_t
-team03_getIndex(int8_t
-                y,
-                int8_t x
-) {
-    return y * 8 +
-           x;
+__inline__ int8_t team03_getIndex(int8_t y, int8_t x) {
+    return y * 8 + x;
 }
 
 /**
@@ -1055,14 +1051,10 @@ __inline__ void team03_setBit(uint64_t *mask, int8_t ind, int value) {
  * @return the described mask
  */
 __inline__ uint64_t
-team03_rangeMask(int8_t
-                 start,
-                 int8_t end
-) {
+team03_rangeMask(int8_t start, int8_t end) {
     uint64_t mask = 1ull << (end - start);
     mask <<= 1, mask--;
-    return mask <<
-                start;
+    return mask << start;
 }
 
 /**
