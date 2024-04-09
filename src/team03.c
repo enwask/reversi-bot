@@ -16,8 +16,6 @@
 #ifdef GCC_OPTIM_AVAILABLE
 #   pragma GCC push_options
 #   pragma GCC optimize("-O2")
-#else
-#   pragma message("GCC optimizations unavailable.")
 #endif // GCC_OPTIM_AVAILABLE
 
 
