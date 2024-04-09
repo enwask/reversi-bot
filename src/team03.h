@@ -115,6 +115,18 @@ pos_t team03_getMove(board_t state, int color, int time);
  */
 
 /**
+ * Allocates time for this turn, returning a bound for the max
+ * amount of time to spend on the current move (in ms).
+ *
+ * @param state the current board state
+ * @param color our piece color
+ * @param time how many seconds we have left
+ *
+ * @return the max time for this turn, in ms
+ */
+long long team03_allocateTime(board_t state, int color, int timeLeft);
+
+/**
  * Computes a rough estimate of the given color's mobility for the
  * current board state, by counting the number of cells that could
  * potentially be a valid move location (that is, empty cells that
@@ -379,6 +391,28 @@ void team03_sort(solvePair_t *pairs, int lo, int hi);
  * @param hi the rightmost index of the range to merge
  */
 void team03_merge(solvePair_t *arr, int lo, int md, int hi);
+
+/**
+ * Computes the amount of time that has passed since the
+ * start timestamp, in milliseconds.
+ *
+ * @param start the start timestamp
+ *
+ * @return the elapsed time in ms
+ */
+long long team03_timeSinceMs(struct timeval start);
+
+/**
+ * Gets the number of our current move (1 + the number
+ * of moves we've taken so far)
+ *
+ * @param state the current board state
+ * @param color the color to count moves for
+ *
+ * @return the number of moves we've taken (# pieces - 4) + 1
+ */
+int team03_getMoveNum(board_t state, int color);
+
 
 /*
  **********************

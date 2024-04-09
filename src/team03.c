@@ -1,8 +1,11 @@
 /*
  **********************
- * Optimizations      *
+ * Configuration      *
  **********************
  */
+
+// Enable/disable debug messages
+#define TEAM03_DEBUG 1
 
 // Check if GCC optimizations are available
 #if (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 7) || defined(__clang__))
@@ -24,14 +27,15 @@
  **********************
  */
 
-#include <stdio.h>
-#include <time.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <sys/time.h>
+#include <assert.h>
 #include "team03.h"
 
 const int team03_maxLayers = 32; // max depth of iterative search
-long long team03_maxTime = 6000; // max time (ms) per move
-clock_t team03_startTime; // start time of the current move
+long long team03_maxTime = 5000; // max time (ms) per move; overwritten later
+struct timeval team03_startTime; // start time of the current move
 
 
 /*
@@ -75,8 +79,21 @@ position *team03Move(const enum piece board[][SIZE], enum piece mine, int second
  * @return the position we placed a piece at
  */
 pos_t team03_getMove(board_t state, int color, int time) {
-    team03_startTime = clock();
-    return team03_iterate(state, color);
+    // Start the move clock and allocate time
+    gettimeofday(&team03_startTime, 0);
+    team03_maxTime = team03_allocateTime(state, color, time);
+    
+    // Search for a move
+    pos_t res = team03_iterate(state, color);
+
+#if TEAM03_DEBUG
+    // Print how much time we took to pick a move, if debug is on
+    long long took = team03_timeSinceMs(team03_startTime);
+    printf("team03_iterate took %lli ms.\n\n", took);
+#endif
+    
+    // Return the move we chose
+    return res;
 }
 
 
@@ -85,6 +102,29 @@ pos_t team03_getMove(board_t state, int color, int time) {
  * Heuristics         *
  **********************
  */
+
+/**
+ * Allocates time for this turn, returning a bound for the max
+ * amount of time to spend on the current move (in ms).
+ *
+ * @param state the current board state
+ * @param color our piece color
+ * @param timeLeft how many seconds we have left
+ *
+ * @return the max time for this turn, in ms
+ */
+long long team03_allocateTime(board_t state, int color, int timeLeft) {
+    // Count pieces
+    int ourPieces = team03_count(state, color);
+    int oppPieces = team03_count(state, !color);
+    
+    // Scale amount of time up to 5s for our first few moves
+    long long time = (ourPieces - 1) * 1000;
+    if (time > 5000) time = 5000;
+    
+    // Return the time we decided on
+    return time;
+}
 
 /**
  * Computes a rough estimate of the given color's mobility for the
@@ -147,10 +187,15 @@ int team03_evaluateStatic(board_t state, int color) {
                 - team03_computeMobility(state, !color);
     
     // Weight the corners
-    const pos_t corners[4] = {{0, 0},
-                              {0, 7},
-                              {7, 7},
-                              {7, 0}};
+    const pos_t corners[4] = {
+            {0, 0},
+            {0, 7},
+            {7, 7},
+            {7, 0}
+    };
+    
+    // Corner weight starts at 4; goes up by 2 for every 8 moves
+    int cornerWeight = 4 + (team03_getMoveNum(state, color) / 8) * 2;
     for (int i = 0; i < 4; i++) {
         if (team03_getPiece(state, corners[i]) == color) score += 4;
     }
@@ -189,21 +234,34 @@ int team03_evaluateStatic(board_t state, int color) {
 pos_t team03_iterate(board_t state, int color) {
     // Get our valid moves from this position, in decreasing order of static score
     solvePair_t moveList[64];
-    int ind = team03_getMoves(state, color, moveList, 1);
+    int num = team03_getMoves(state, color, moveList, 1);
+
+#ifdef TEAM03_DEBUG
+    // Print our status if debugging is on
+    printf("Our turn!\n%d moves available, max time: %lli ms.\n", num, team03_maxTime);
+#endif
     
-    // TODO: make sure these are initialized if we change when we do the timeout check
-    int layers = 1;
-    pos_t bestPos;
-    pos_t retPos; // TODO: can we assume we have a move and initialize to moveList[0]?
+    // If we don't have any moves, we shouldn't have gotten a move at all
+    assert(num != 0 && "Our turn but no moves available!");
+    
+    // Track our overall best move & position to return
+    pos_t bestPos = moveList[0].pos;
+    pos_t retPos = bestPos;
     
     // Iteratively deepen the search
-    while (1) {
-        // Track our best move and alpha/beta
+    for (int layers = 0; layers <= team03_maxLayers; layers++) {
+#ifdef TEAM03_DEBUG
+        // Print how much time we've taken + the current search depth
+        long long taken = team03_timeSinceMs(team03_startTime);
+        printf("We've taken %lli ms.\nSearching to %d...\n\n", taken, layers);
+#endif
+        
+        // Track our best move and alpha/beta for this depth
         int best = -1e9, alpha = -1e9, beta = 1e9;
         bestPos = team03_makePos(-1, -1);
         
         // Iterate through valid moves for this position
-        for (int i = 0; i < ind; i++) {
+        for (int i = 0; i < num; i++) {
             // DLS on the current move
             solvePair_t pair = moveList[i];
             solvePair_t pair2 = team03_solveBoard(
@@ -232,11 +290,10 @@ pos_t team03_iterate(board_t state, int color) {
         }
         
         // Sort our move list on the updated scores
-        team03_sort(moveList, 0, ind - 1);
+        team03_sort(moveList, 0, num - 1);
         
-        // Increment our search depth
-        if (++layers >= team03_maxLayers) break;
-        retPos = bestPos; // update the position to return with our current best move
+        // Update return pos to the best move from this depth
+        retPos = bestPos;
     }
     
     // Return the best move we found
@@ -260,8 +317,8 @@ solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, in
     // If we're nearing a leaf, check that we haven't timed out
     // TODO: this is fucking stupid
     if (layer == 2) {
-        clock_t endTime = clock();
-        if (1000 * (endTime - team03_startTime) > team03_maxTime * CLOCKS_PER_SEC) {
+        long long taken = team03_timeSinceMs(team03_startTime);
+        if (taken >= team03_maxTime) {
             solvePair_t pair = team03_makeSolvePair(team03_makePos(-2, -2), 0);
             return pair;
         }
@@ -890,6 +947,41 @@ void team03_merge(solvePair_t *arr, int lo, int md, int hi) {
     
     // Copy back to original array; free up temp
     for (i = lo; i <= hi; i++) arr[i] = temp[i - lo];
+}
+
+/**
+ * Computes the amount of time that has passed since the
+ * start timestamp, in milliseconds.
+ *
+ * @param start the start timestamp
+ *
+ * @return the elapsed time in ms
+ */
+long long team03_timeSinceMs(struct timeval start) {
+    // Get the current time
+    struct timeval now;
+    gettimeofday(&now, 0);
+    
+    // Compute the elapsed time in microseconds
+    long long diff_usec = (now.tv_usec + 1000000ll * now.tv_sec)
+                          - (start.tv_usec + 1000000ll * start.tv_sec);
+    
+    // Return the elapsed time in ms
+    return diff_usec / 1000;
+}
+
+/**
+ * Gets the number of our current move (1 + the number
+ * of moves we've taken so far)
+ *
+ * @param state the current board state
+ * @param color the color to count moves for
+ *
+ * @return the number of moves we've taken (# pieces - 4) + 1
+ */
+int team03_getMoveNum(board_t state, int color) {
+    int num = team03_count(state, color);
+    return num - 4 + 1;
 }
 
 
