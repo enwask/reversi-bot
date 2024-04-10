@@ -141,8 +141,12 @@ long long team03_allocateTime(board_t state, int color, int timeLeft) {
         return (res < 20) ? 20 : res;
     }
     
+    // If we would get under 5.5s, take ~6.5 and count as 6
+    long long res = 5000 + timeToNextSecond;
+    if (res < 5500) res += 1000;
+    
     // Return our computed time allocation
-    return 5000 + timeToNextSecond - team03_timePadding;
+    return res - team03_timePadding;
 }
 
 /**
@@ -288,8 +292,9 @@ pos_t team03_iterate(board_t state, int color) {
                 if (i <= 9) printf(ANSI_CYAN "[%-1d] " ANSI_RESET, i);
                 else printf(ANSI_CYAN "[%-2d]" ANSI_RESET, i);
             } else printf(" %-3d", i);
-        printf("\n  ");
-        for (int i = 1; i < layers; i++) printf("    ");
+        if (layers > DEPTH_STATUS_MAX) printf(ANSI_CYAN "[%-3d]\n  " ANSI_RESET, layers);
+        else printf(" ...\n  ");
+        for (int i = 1; i < ((layers > DEPTH_STATUS_MAX) ? DEPTH_STATUS_MAX + 1 : layers); i++) printf("    ");
         printf(ANSI_CYAN " ▲\n" ANSI_RESET);
 #endif
         
