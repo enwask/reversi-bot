@@ -7,8 +7,8 @@
 #define TEAMRAND_H
 
 #include <stdlib.h>
-#include "../framework/reversi_functions.h"
-#include "team03.h"
+#include "../src/reversi_functions.h"
+#include "../src/team03.h"
 
 
 /*

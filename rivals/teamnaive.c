@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "teamnaive.h"
+#include "../src/team03.h"
 
 
 /*
@@ -46,7 +47,6 @@ pos_t teamnaive_getMove(board_t state, int color, int time) {
     return pair.pos;
 }
 
-
 /*
 **********************
 * Solv'n stuf        *
@@ -55,10 +55,11 @@ pos_t teamnaive_getMove(board_t state, int color, int time) {
 
 
 int teamnaive_evalBoard(board_t state, int color) {
-    return teamnaive_count(state, color) + (rand() % 2);
+    // Inverted mobility heuristic so we try to pass
+    return team03_computeMobility(state, !color)
+           - team03_computeMobility(state, color) * 8
+           + rand() % 2;
 }
-
-
 
 solvePair_t teamnaive_solveBoard(board_t state, int color, int layer) {
     if (layer == 0) {
@@ -66,7 +67,7 @@ solvePair_t teamnaive_solveBoard(board_t state, int color, int layer) {
         pos_t pos = teamnaive_makePos(-1, -1);
         return teamnaive_makeSolvePair(pos, score);
     }
-
+    
     int best = -1e9;
     pos_t bestPos = teamnaive_makePos(0, 0);
     int iCanPlay = 0;
@@ -74,43 +75,42 @@ solvePair_t teamnaive_solveBoard(board_t state, int color, int layer) {
     for (int r = 0; r < 8; r++) {
         for (int c = 0; c < 8; c++) {
             pos_t pos = teamnaive_makePos(r, c);
-            if (!teamnaive_boardEquals(state, teamnaive_executeMove(state, pos, color^1))) otherCanPlay = 1;
+            if (!teamnaive_boardEquals(state, teamnaive_executeMove(state, pos, color ^ 1))) otherCanPlay = 1;
             board_t nState = teamnaive_executeMove(state, pos, color);
             if (teamnaive_boardEquals(state, nState)) continue;
             iCanPlay = 1;
-            solvePair_t pair = teamnaive_solveBoard(nState, color^1, layer - 1);
+            solvePair_t pair = teamnaive_solveBoard(nState, color ^ 1, layer - 1);
             int score = 0 - pair.score;
             //printf("%d\n", score);
-
+            
             if (score > best) {
                 best = score;
                 bestPos = pos;
             }
         }
     }
-
+    
     if (!iCanPlay) {
         if (otherCanPlay) {
-            solvePair_t ret = teamnaive_solveBoard(state, color^1, layer - 1);
+            solvePair_t ret = teamnaive_solveBoard(state, color ^ 1, layer - 1);
             ret.score = 0 - ret.score;
             return ret;
-        }
-        else {
+        } else {
             int score;
-            if (teamnaive_count(state, color) > teamnaive_count(state, color^1)) score = 1e8;
-            else if (teamnaive_count(state, color) < teamnaive_count(state, color^1)) score = -1e8;
+            if (teamnaive_count(state, color) > teamnaive_count(state, color ^ 1)) score = 1e8;
+            else if (teamnaive_count(state, color) < teamnaive_count(state, color ^ 1)) score = -1e8;
             else score = 0;
             pos_t pos = teamnaive_makePos(-1, -1);
             solvePair_t ret = teamnaive_makeSolvePair(pos, score);
             return ret;
         }
     }
-
+    
     //printf("%d %d\n", best, layer);
-
+    
     solvePair_t pair = teamnaive_makeSolvePair(bestPos, best);
     return pair;
-
+    
 }
 
 
