@@ -7,9 +7,21 @@
 #ifndef TEAM03_H
 #define TEAM03_H
 
-#include <stdlib.h>
-#include "../framework/reversi_functions.h"
 
+// Check if we're on POSIX or Windows
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+#   define TEAM03_IS_POSIX
+#endif
+
+// Include the right library for timeval
+#ifdef TEAM03_IS_POSIX
+#   include <sys/time.h>
+#else
+#   include <time.h>
+#endif
+
+#include <stdlib.h>
+#include "reversi_functions.h"
 
 /*
  **********************
@@ -396,6 +408,19 @@ void team03_merge(solvePair_t *arr, int lo, int md, int hi);
  * @return the elapsed time in ms
  */
 long long team03_timeSinceMs(struct timeval start);
+
+#ifndef TEAM03_IS_POSIX
+/**
+ * Portable reimplementation of POSIX <sys/time.h>'s gettimeofday
+ * for timing with more granular resolution.
+ *
+ * @param tv the timeval
+ * @param _ throwaway
+ *
+ * @return 0 lol
+ */
+int gettimeofday(struct timeval *tv, void *_);
+#endif
 
 /**
  * Gets the approximate turn number from a piece count

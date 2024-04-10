@@ -44,9 +44,19 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <sys/time.h>
 #include <assert.h>
 #include "team03.h"
+
+// Include the right time thing
+#ifdef TEAM03_IS_POSIX
+#   include <sys/time.h>
+#else
+#   undef SIZE // same identifier used in the windows header
+#   include <windows.h>
+#   include <time.h>
+#   undef SIZE
+#   define SIZE 8
+#endif
 
 const int team03_timePadding = 20; // padding (ms) for search timer
 const int team03_maxLayers = 24; // max depth of iterative search
@@ -1042,6 +1052,44 @@ long long team03_timeSinceMs(struct timeval start) {
     long long diff_usec = diff.tv_usec + 1000000ll * diff.tv_sec;
     return diff_usec / 1000; // convert to ms
 }
+
+#ifndef TEAM03_IS_POSIX
+/**
+ * Portable reimplementation of POSIX <sys/time.h>'s gettimeofday
+ * for timing with more granular resolution.
+ *
+ * @param tv the timeval
+ * @param _ throwaway
+ *
+ * @return 0 lol
+ */
+int gettimeofday(struct timeval *tv, void *_) {
+// https://web.archive.org/web/20100111030931/http://www.cpp-programming.net/c-tidbits/gettimeofday-function-for-windows/
+// I don't know what these directives do but they look important
+#if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
+#   define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64
+#else
+#   define DELTA_EPOCH_IN_MICROSECS  11644473600000000ULL
+#endif
+    FILETIME ft;
+    uint64_t tmp = 0;
+    static int tzflag;
+    
+    GetSystemTimeAsFileTime(&ft);
+    
+    tmp |= ft.dwHighDateTime;
+    tmp <<= 32;
+    tmp |= ft.dwLowDateTime;
+    
+    // Convert to UNIX epoch
+    tmp /= 10;  // ns -> us
+    tmp -= DELTA_EPOCH_IN_MICROSECS;
+    tv->tv_sec = (long) (tmp / 1000000UL);
+    tv->tv_usec = (long) (tmp % 1000000UL);
+    
+    return 0;
+}
+#endif
 
 /**
  * Gets the approximate turn number from a piece count
