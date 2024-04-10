@@ -1015,16 +1015,27 @@ void team03_merge(solvePair_t *arr, int lo, int md, int hi) {
  */
 long long team03_timeSinceMs(struct timeval start) {
     // Get the current time
-    struct timeval now;
+    struct timeval now, diff;
     gettimeofday(&now, 0);
     
-    // Compute the elapsed time in microseconds
-    long long diff_usec =
-            (now.tv_usec + 1000000ll * now.tv_sec)
-            - (start.tv_usec + 1000000ll * start.tv_sec);
+    // Safely subtract the two timevals
+    // https://www.gnu.org/software/libc/manual/html_node/Calculating-Elapsed-Time.html
+    if (now.tv_usec < start.tv_usec) { // carry microseconds or something
+        long long nsec = (start.tv_usec - now.tv_usec) / 1000000 + 1;
+        start.tv_usec -= 1000000 * nsec;
+        start.tv_sec += nsec;
+    }
+    if (now.tv_usec - start.tv_usec > 1000000) {
+        int nsec = (now.tv_usec - start.tv_usec) / 1000000;
+        start.tv_usec += 1000000 * nsec;
+        start.tv_sec -= nsec;
+    }
+    diff.tv_sec = now.tv_sec - start.tv_sec;
+    diff.tv_usec = now.tv_usec - start.tv_usec;
     
-    // Return the elapsed time in ms
-    return diff_usec / 1000;
+    // Compute the difference in microseconds and return
+    long long diff_usec = diff.tv_usec + 1000000ll * diff.tv_sec;
+    return diff_usec / 1000; // convert to ms
 }
 
 /**
