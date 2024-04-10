@@ -96,6 +96,11 @@ pos_t team03_getMove(board_t state, int color, int time) {
     // Start the move clock and allocate time
     gettimeofday(&team03_startTime, 0);
     team03_maxTime = team03_allocateTime(state, color, time);
+
+#if TEAM03_DEBUG
+    // Print amount of time we have remaining
+    printf("We have " ANSI_CYAN "%d s" ANSI_RESET " left.\n", time);
+#endif
     
     // Search for a move
     pos_t res = team03_iterate(state, color);
@@ -134,12 +139,13 @@ long long team03_allocateTime(board_t state, int color, int timeLeft) {
     // Calculate number of ms until the next full second
     long long timeToNextSecond = 1000 - (team03_startTime.tv_usec / 1000);
     
-    // If we have <= 6 seconds on the clock, we only take free moves.
-    // First four moves are free too (unless we're forced up against
-    // the end of a second; in which case we take 20ms, counts as 1)
-    if (numPieces <= 11 || timeLeft <= 6) {
+    // If we have <=10 seconds on the clock, or in the first four
+    // turns, we only take free moves (count as 0 seconds).
+    if (numPieces <= 11 || timeLeft <= 10) {
         long long res = timeToNextSecond - team03_timePadding;
-        return (res < 20) ? 20 : res;
+        // ...unless we're forced up against the end of a second, in
+        // which case we take 10ms and pray we have time to spare.
+        return (res < 10) ? 10 : res;
     }
     
     // If we would get under 5.5s, take ~6.5 and count as 6
