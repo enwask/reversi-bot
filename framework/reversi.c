@@ -291,6 +291,7 @@ int play(enum piece ourColor) {
             int endT = time(0);
             long long ms = (1000.0 * (clock_end - clock_start)) / CLOCKS_PER_SEC;
             printf("We took %lld ms (counted as %d s)\n", ms, endT - startT);
+            printf("We have %d seconds remaining\n\n", blackTime - (endT - startT));
             
             // Update time.
             blackTime = blackTime - (endT - startT);

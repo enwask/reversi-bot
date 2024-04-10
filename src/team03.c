@@ -277,9 +277,7 @@ pos_t team03_iterate(board_t state, int color) {
 #if TEAM03_DEBUG
 #   define DEPTH_STATUS_MAX 14 // # of layers to display in depth status
     // Debug search status
-    printf("Search depth:\n ");
-    for (int i = 1; i <= DEPTH_STATUS_MAX; i++) printf(" %-3d", i);
-    printf("\n");
+    printf("Search depth:\n\n\n\n");
 #endif
     
     // Iteratively deepen the search
