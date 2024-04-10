@@ -285,11 +285,13 @@ int play(enum piece ourColor) {
             
             // Do the move and time it.
             int startT = time(0);
-            clock_t clock_start = clock();
+            struct timeval start;
+            gettimeofday(&start, 0);
+            
             mymove = team03Move(board, player, ourColor == BLACK ? blackTime : whiteTime);
-            clock_t clock_end = clock();
+            
             int endT = time(0);
-            long long ms = (1000.0 * (clock_end - clock_start)) / CLOCKS_PER_SEC;
+            long long ms = team03_timeSinceMs(start);
             printf("We took %lld ms (counted as %d s)\n", ms, endT - startT);
             
             // Update time.
