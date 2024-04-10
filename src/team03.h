@@ -1,6 +1,7 @@
 /*
  * COP3502H Final Project
  * Team 03
+ * Erick + Benjamin
  */
 
 #ifndef TEAM03_H

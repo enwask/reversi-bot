@@ -1,11 +1,18 @@
 /*
+ * COP3502H Final Project
+ * Team 03
+ * Erick + Benjamin
+ */
+
+
+/*
  **********************
  * Configuration      *
  **********************
  */
 
-// Enable/disable debug messages
 #define TEAM03_DEBUG 0
+// Toggle pretty-printing search status
 
 // Define escape code macros for debug printing
 #if TEAM03_DEBUG
@@ -23,8 +30,7 @@
 // If available, enable the O2 optimization level
 #ifdef GCC_OPTIM_AVAILABLE
 #   pragma GCC push_options
-#   pragma GCC optimize("O2") // use higher optimization level
-#   pragma GCC target("popcnt") // use HW instruction for popcount
+#   pragma GCC optimize("O2")
 #endif // GCC_OPTIM_AVAILABLE
 
 
@@ -40,6 +46,7 @@
 #include <assert.h>
 #include "team03.h"
 
+const int team03_timePadding = 10; // padding (ms) for search timer
 const int team03_maxLayers = 24; // max depth of iterative search
 long long team03_maxTime = 5000; // max time (ms) per move; overwritten later
 struct timeval team03_startTime; // start time of the current move
@@ -129,7 +136,7 @@ long long team03_allocateTime(board_t state, int color, int timeLeft) {
     if (numPieces <= 11) return 500;
     
     // Otherwise use six seconds
-    return 6000;
+    return 6000 - team03_timePadding;
 }
 
 /**
@@ -224,7 +231,7 @@ pos_t team03_iterate(board_t state, int color) {
     // Print our status if debugging is on
     printf("Our turn! " ANSI_CYAN "We are %s (%c)\n"
            ANSI_RESET "Found " ANSI_CYAN "%d"
-           ANSI_RESET " moves, max time: "
+           ANSI_RESET " moves, allocated "
            ANSI_RED "%lli ms" ANSI_RESET "\n\n",
            
            color ? "white" : "black",
