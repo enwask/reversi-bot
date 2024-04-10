@@ -128,6 +128,17 @@ pos_t team03_getMove(board_t state, int color, int time);
 long long team03_allocateTime(board_t state, int color, int timeLeft);
 
 /**
+ * Computes a relative score for how many of the pieces on th
+ * board we currently own. Not weighted very highly.
+ *
+ * @param state the board state
+ * @param color the color to count pieces for
+ *
+ * @return the fraction of pieces we own on the board
+ */
+float team03_computeParity(board_t state, int color);
+
+/**
  * Computes the given color's mobility for the current board state,
  * counting the number of valid moves that color can take.
  *

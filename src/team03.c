@@ -129,14 +129,35 @@ pos_t team03_getMove(board_t state, int color, int time) {
  */
 long long team03_allocateTime(board_t state, int color, int timeLeft) {
     // Count pieces
-    int numPieces = team03_count(state, color)
-                    + team03_count(state, !color);
+    int numPieces = team03_count(state, color) + team03_count(state, !color);
     
-    // 500ms for first four moves
-    if (numPieces <= 11) return 500;
+    // Calculate number of ms until the next full second
+    long long timeToNextSecond = 1000 - (team03_startTime.tv_usec / 1000);
     
-    // Otherwise use six seconds
-    return 6000 - team03_timePadding;
+    // First four moves are free (unless we're forced up against the
+    // end of a second; in which case we take 20ms and count as 1
+    if (numPieces <= 11) {
+        long long res = timeToNextSecond - team03_timePadding;
+        return (res < 20) ? 20 : res;
+    }
+    
+    // Return our computed time allocation
+    return 5000 + timeToNextSecond - team03_timePadding;
+}
+
+/**
+ * Computes a relative score for how many of the pieces on th
+ * board we currently own. Not weighted very highly.
+ *
+ * @param state the board state
+ * @param color the color to count pieces for
+ *
+ * @return a relative parity score
+ */
+float team03_computeParity(board_t state, int color) {
+    // Score: (# of our pieces / # of total pieces)
+    return team03_count(state, color)
+           / (float) team03_popcount(state.on);
 }
 
 /**
@@ -176,6 +197,10 @@ int team03_evaluateStatic(board_t state, int color) {
     // Calculate an overall mobility score
     int score = team03_computeMobility(state, color)
                 - team03_computeMobility(state, !color);
+    
+    // Add parity score
+    int parityScore = team03_computeParity(state, color) * 2;
+    score += parityScore;
     
     // Weight the corners
     const pos_t corners[4] = {
