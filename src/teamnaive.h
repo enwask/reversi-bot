@@ -8,69 +8,7 @@
 
 #include <stdlib.h>
 #include "../framework/reversi_functions.h"
-
-
-/*
- **********************
- * Fixed-width types  *
- **********************
- */
-
-// Define fixed-width types if missing (pre-C99)
-#ifndef uint64_t
-#define uint64_t unsigned long long
-#endif
-#ifndef int8_t
-#define int8_t char
-#endif
-
-
-/*
- **********************
- * Data types         *
- **********************
- */
-
-/**
- * Fast board data type.
- * <br/><br/>
- *
- * The first integer stores, for every cell, whether there is a piece in the
- * cell at that index (0-63 from top to bottom, left to right).
- *
- * The second integer stores, for each cell with a piece in it, the color of
- * that cell. The bits at any other (empty) positions are meaningless.
- * <br/><br/>
- *
- * In theory, this gives us really fast lookups and flips, which should
- * directly correspond with better moves since we can traverse further
- * down the game tree.
- */
-#ifndef BOARD_H
-#define BOARD_H
-typedef struct board {
-    uint64_t on, color;
-} board_t;
-#endif
-
-/**
- * Lightweight position struct.
- * y=row, x=col
- */
-#ifndef POS_H
-#define POS_H
-typedef struct pos {
-    int8_t y, x; // signed to avoid underflow issues in move loops
-} pos_t;
-#endif
-
-#ifndef SOLVEPAIR_H
-#define SOLVEPAIR_H
-typedef struct solvePair {
-    pos_t pos;
-    int score;
-} solvePair_t;
-#endif
+#include "team03.h"
 
 
 /*
