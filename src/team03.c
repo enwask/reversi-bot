@@ -14,12 +14,14 @@
 // Toggle pretty-printing search status
 #define TEAM03_DEBUG 0
 
-// Define escape code macros for debug printing
+// Define escape code macros for board + debug printing
 #if TEAM03_DEBUG
-#   define ANSI_RED "\x1b[31m"
-#   define ANSI_GREEN "\x1b[32m"
-#   define ANSI_CYAN "\x1b[36m"
-#   define ANSI_RESET "\x1b[0m"
+#   define ANSI_RED     "\x1b[31m"
+#   define ANSI_GREEN   "\x1b[32m"
+#   define ANSI_CYAN    "\x1b[36m"
+#   define ANSI_YELLOW  "\x1b[33m"
+#   define ANSI_PURPLE  "\x1b[35m"
+#   define ANSI_RESET   "\x1b[0m"
 #   define VT100_CLEAR_LINE "\033[A\33[2K"
 #endif
 
@@ -280,18 +282,13 @@ pos_t team03_iterate(board_t state, int color) {
     // Track our overall best move & position to return
     pos_t bestPos = moveList[0].pos;
     pos_t retPos = bestPos;
-
-#if TEAM03_DEBUG
-#   define DEPTH_STATUS_MAX 14 // # of layers to display in depth status
-    // Debug search status
-    printf("Search depth:\n\n\n\n");
-#endif
     
     // Iteratively deepen the search
     for (int layers = 1; layers <= team03_maxLayers; layers++) {
-#if TEAM03_DEBUG
-        // Print search depth indicator
-        for (int i = 0; i < 2; i++) printf(VT100_CLEAR_LINE " ");
+#if TEAM03_DEBUG // Print search depth indicator
+#   define DEPTH_STATUS_MAX 14
+        if (layers > 1) for (int i = 0; i < 4; i++) printf(VT100_CLEAR_LINE);
+        printf("Search depth:\n\n  ");
         for (int i = 1; i <= DEPTH_STATUS_MAX; i++)
             if (i == layers) {
                 if (i <= 9) printf(ANSI_CYAN "[%-1d] " ANSI_RESET, i);
@@ -541,7 +538,13 @@ void team03_print(board_t state) {
             else {
                 // Non-empty cell
                 int color = team03_getBit(state.color, ind);
+#if TEAM03_DEBUG
+                // If debug is on, color the output yellow/magenta
+                if (color) printf(ANSI_YELLOW "O " ANSI_RESET);
+                else printf(ANSI_PURPLE "X " ANSI_RESET);
+#else
                 printf("%c ", color ? 'O' : 'X'); // print the cell color
+#endif
             }
         }
         printf("\n"); // end of this row
