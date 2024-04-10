@@ -134,9 +134,10 @@ long long team03_allocateTime(board_t state, int color, int timeLeft) {
     // Calculate number of ms until the next full second
     long long timeToNextSecond = 1000 - (team03_startTime.tv_usec / 1000);
     
-    // First four moves are free (unless we're forced up against the
-    // end of a second; in which case we take 20ms and count as 1
-    if (numPieces <= 11) {
+    // If we have <= 6 seconds on the clock, we only take free moves.
+    // First four moves are free too (unless we're forced up against
+    // the end of a second; in which case we take 20ms, counts as 1)
+    if (numPieces <= 11 || timeLeft <= 6) {
         long long res = timeToNextSecond - team03_timePadding;
         return (res < 20) ? 20 : res;
     }
