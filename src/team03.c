@@ -42,22 +42,28 @@
  **********************
  */
 
+// General includes for all platforms
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
 #include "team03.h"
 
-// Include the right time thing
+// <sys/time>'s gettimeofday function only exists on POSIX, so if
+// we're running windows, we instead include its headers and
+// reimplement gettimeofday below
 #ifdef TEAM03_IS_POSIX
 #   include <sys/time.h>
 #else
-#   undef SIZE // same identifier used in the windows header
+#   undef SIZE
+//  ^ The windows header has a macro called SIZE, so we need to make
+//    sure it doesn't get redefined twice (compiler error)
 #   include <windows.h>
 #   include <time.h>
 #   undef SIZE
 #   define SIZE 8
 #endif
 
+// Constants & global variables for move timing
 const int team03_timePadding = 20; // padding (ms) for search timer
 const int team03_maxLayers = 24; // max depth of iterative search
 long long team03_maxTime = 5000; // max time (ms) per move; overwritten later
@@ -434,7 +440,6 @@ solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, in
         solvePair_t oppSolve = team03_solveBoard(cur, !color, layer - 1, -beta, -alpha);
         
         // If we ran out of time, return the opponent's move
-        // TODO: ???
         if (oppSolve.pos.x == -2) return oppSolve;
         
         // Update the best move
@@ -652,20 +657,6 @@ int team03_count(board_t state, int color) {
 
 /**
  * Checks if the given board states are equal.
- * <p>
- * TODO: Something to keep in mind here:
-     * If the garbage values in the color mask (where the associated
-     * bits in `state.on` are off) differ, this function will return
-     * false.<br/>
-     *
-     * <b>If we end up doing manipulations in other code that might
-     * modify colors at positions where pieces are not present</b>,
-     * this function should be changed to check the masks for each
-     * color ANDed with the on masks.<br/>
-     *
-     * For now we don't ever change color bits from 0 if there hasn't
-     * been a piece placed at them, so we should be fine.
- * </p>
  *
  * @param state1 the first board position
  * @param state2 the second board position
@@ -750,7 +741,6 @@ int8_t team03_getIndexByPos(pos_t pos) {
  * @return a mask with the bits in the described range asserted
  */
 uint64_t team03_getMoveMask(pos_t start, pos_t end) {
-    // TODO: I think this code works but worth more testing
     // Smaller index first for ease of use
     if (start.y > end.y || (start.y == end.y && start.x > end.x)) {
         pos_t tmp = start;
@@ -816,7 +806,6 @@ uint64_t team03_getMoveMask(pos_t start, pos_t end) {
  * @param color the color (0/1) of the piece to place
  */
 int team03_isValidMove(board_t state, pos_t pos, int color) {
-    // TODO: test this more lol
     // If the cell is nonempty, we can't place here
     if (team03_hasPiece(state, pos)) return 0;
     
@@ -859,7 +848,6 @@ int team03_isValidMove(board_t state, pos_t pos, int color) {
  * @return the board state after making the given move
  */
 board_t team03_executeMove(board_t state, pos_t pos, int color) {
-    // TODO: test this more lol
     // If the cell is nonempty, we can't place here
     if (team03_hasPiece(state, pos)) return state;
     
@@ -1053,40 +1041,32 @@ long long team03_timeSinceMs(struct timeval start) {
     return diff_usec / 1000; // convert to ms
 }
 
-#ifndef TEAM03_IS_POSIX
-/**
- * Portable reimplementation of POSIX <sys/time.h>'s gettimeofday
- * for timing with more granular resolution.
- *
- * @param tv the timeval
- * @param _ throwaway
- *
- * @return 0 lol
- */
-int gettimeofday(struct timeval *tv, void *_) {
+// If we're not on POSIX, we have to provide our own implementation
+// of gettimeofday using windows' FILETIME type
 // https://web.archive.org/web/20100111030931/http://www.cpp-programming.net/c-tidbits/gettimeofday-function-for-windows/
-// I don't know what these directives do but they look important
-#if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
-#   define DELTA_EPOCH_IN_MICROSECS  11644473600000000Ui64
-#else
-#   define DELTA_EPOCH_IN_MICROSECS  11644473600000000ULL
-#endif
-    FILETIME ft;
-    uint64_t tmp = 0;
-    static int tzflag;
+#ifndef TEAM03_IS_POSIX
+int gettimeofday(struct timeval *tv, void *_) {
+#   if defined(_MSC_VER) || defined(_MSC_EXTENSIONS)
+#       define DELTA_EPOCH_USECS  11644473600000000Ui64
+#   else
+#       define DELTA_EPOCH_USECS  11644473600000000ULL
+#   endif
     
+    // Get the current time from Windows
+    FILETIME ft;
     GetSystemTimeAsFileTime(&ft);
     
-    tmp |= ft.dwHighDateTime;
-    tmp <<= 32;
-    tmp |= ft.dwLowDateTime;
+    // Load filetime to tmp
+    uint64_t tmp = ft.dwHighDateTime;
+    tmp <<= 32, tmp |= ft.dwLowDateTime;
     
     // Convert to UNIX epoch
     tmp /= 10;  // ns -> us
-    tmp -= DELTA_EPOCH_IN_MICROSECS;
+    tmp -= DELTA_EPOCH_USECS;
     tv->tv_sec = (long) (tmp / 1000000UL);
     tv->tv_usec = (long) (tmp % 1000000UL);
     
+    // Return 0 to match POSIX implementation
     return 0;
 }
 #endif
@@ -1180,8 +1160,7 @@ void team03_setBit(uint64_t *mask, int8_t ind, int value) {
  *
  * @return the described mask
  */
-uint64_t
-team03_rangeMask(int8_t start, int8_t end) {
+uint64_t team03_rangeMask(int8_t start, int8_t end) {
     uint64_t mask = 1ull << (end - start);
     mask <<= 1, mask--;
     return mask << start;
