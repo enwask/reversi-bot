@@ -226,7 +226,9 @@ int team03_evaluateStatic(board_t state, int color) {
     // Corner weight starts at 4; goes up by 4 every 8 turns
     int cornerWeight = 4 + (team03_getTurnNum(state, color) / 8) * 4;
     for (int i = 0; i < 4; i++) {
-        if (team03_getPiece(state, corners[i]) == color) score += cornerWeight;
+        int piece = team03_getPiece(state, corners[i]);
+        if (piece == color) score += cornerWeight;
+        if (piece == !color) score -= cornerWeight;
     }
     /*
     const pos_t adjCorners[12] = {{0, 1}, {1, 1}, {1, 0}, {0, 6}, {1, 6}, {1, 7}, {7, 6}, {6, 6}, {6, 7}, {7, 1}, {6, 1}, {6, 0}};
