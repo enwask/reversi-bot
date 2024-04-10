@@ -22,9 +22,11 @@ void initBoard(enum piece board[][SIZE]) {
     board[SIZE / 2][SIZE / 2 - 1] = BLACK;
 }
 
-#define ANSI_YELLOW "\x1b[33m"
-#define ANSI_PURPLE "\x1b[35m"
-#define ANSI_RESET_ "\x1b[0m"
+#ifndef ANSI_YELLOW
+#   define ANSI_YELLOW "\x1b[33m"
+#   define ANSI_PURPLE "\x1b[35m"
+#   define ANSI_RESET "\x1b[0m"
+#endif
 
 // Prints board.
 void printBoard(enum piece board[][SIZE]) {
@@ -43,14 +45,11 @@ void printBoard(enum piece board[][SIZE]) {
         printf("%d ", i);
         for (j = 0; j < SIZE; j++) {
             switch (board[i][j]) {
-                case BLACK:
-                    printf(ANSI_PURPLE "X " ANSI_RESET_);
+                case BLACK:printf(ANSI_PURPLE "X " ANSI_RESET);
                     break;
-                case WHITE:
-                    printf(ANSI_YELLOW "O " ANSI_RESET_);
+                case WHITE:printf(ANSI_YELLOW "O " ANSI_RESET);
                     break;
-                default:
-                    printf(". ");
+                default:printf(". ");
             }
         }
         printf("\n");

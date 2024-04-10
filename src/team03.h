@@ -23,6 +23,11 @@
 #include <stdlib.h>
 #include "reversi_functions.h"
 
+// System check
+#if defined (__unix__) || (defined (__APPLE__) && defined (__MACH__))
+#   define TEAM03_IS_POSIX
+#endif
+
 /*
  **********************
  * Fixed-width types  *
@@ -90,6 +95,15 @@ typedef struct solvePair {
     int score;
 } solvePair_t;
 #endif // SOLVEPAIR_H
+
+#ifndef TEAM03_IS_POSIX
+/**
+ * Portable reimplementation of POSIX timeval
+ */
+struct timeval {
+    long tv_sec, tv_usec;
+};
+#endif
 
 
 /*
