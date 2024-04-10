@@ -312,7 +312,7 @@ pos_t team03_iterate(board_t state, int color) {
         if (layers > DEPTH_STATUS_MAX) printf(ANSI_CYAN "[%-2d]\n  " ANSI_RESET, layers);
         else printf(" ...\n  ");
         for (int i = 1; i < ((layers > DEPTH_STATUS_MAX) ? DEPTH_STATUS_MAX + 1 : layers); i++) printf("    ");
-        printf(ANSI_CYAN " ▲\n" ANSI_RESET);
+        printf(ANSI_CYAN " ^\n" ANSI_RESET);
 #endif
         
         // Track our best move and alpha/beta for this depth
