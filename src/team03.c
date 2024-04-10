@@ -212,8 +212,8 @@ int team03_evaluateStatic(board_t state, int color) {
                 - team03_computeMobility(state, !color);
     
     // Add parity score
-    int parityScore = team03_computeParity(state, color) * 2;
-    score += parityScore;
+//    int parityScore = team03_computeParity(state, color) * 2;
+//    score += parityScore;
     
     // Weight the corners
     const pos_t corners[4] = {
@@ -264,6 +264,9 @@ pos_t team03_iterate(board_t state, int color) {
     // Get our valid moves from this position, in decreasing order of static score
     solvePair_t moveList[64];
     int num = team03_getMoves(state, color, moveList, 1);
+    
+    // If there's only one valid move, don't bother traversing
+    if (num == 1) return moveList[0].pos;
 
 #if TEAM03_DEBUG
     // Print our status if debugging is on
@@ -374,7 +377,7 @@ solvePair_t team03_solveBoard(board_t state, int color, int layer, int alpha, in
         return pair;
     }
     
-    // If we're at a leaf, return our best move at this level
+    // If we're at a leaf, return our score
     if (layer == 0) {
         int score = team03_evaluateStatic(state, color);
         pos_t pos = team03_makePos(-1, -1);
