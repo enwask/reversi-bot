@@ -6,7 +6,7 @@
 
 void humanVHuman();
 void humanVComputer();
-void computerVComputer();
+void computerVComputer(int team1, int team2);
 int play(enum piece ourColor);
 void test();
 

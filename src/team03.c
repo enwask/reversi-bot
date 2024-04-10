@@ -12,7 +12,7 @@
  */
 
 // Toggle pretty-printing search status
-#define TEAM03_DEBUG 0
+#define TEAM03_DEBUG 1
 
 // Define escape code macros for board + debug printing
 #if TEAM03_DEBUG
