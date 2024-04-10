@@ -7,11 +7,13 @@
 // Enable/disable debug messages
 #define TEAM03_DEBUG 0
 
-// Define color codes for debug printing
+// Define escape code macros for debug printing
 #if TEAM03_DEBUG
 #   define ANSI_RED "\x1b[31m"
 #   define ANSI_GREEN "\x1b[32m"
+#   define ANSI_CYAN "\x1b[36m"
 #   define ANSI_RESET "\x1b[0m"
+#   define VT100_CLEAR_LINE "\033[A\33[2K"
 #endif
 
 // Check if GCC optimizations are available
@@ -94,9 +96,7 @@ pos_t team03_getMove(board_t state, int color, int time) {
 #if TEAM03_DEBUG
     // Print how much time we took to pick a move, if debug is on
     long long took = team03_timeSinceMs(team03_startTime);
-    printf(ANSI_RED
-           "team03_iterate took %lli ms\n\n"
-           ANSI_RESET, took);
+    printf("team03_iterate took " ANSI_RED "%lli ms\n\n" ANSI_RESET, took);
 #endif
     
     // Return the move we chose
@@ -222,9 +222,13 @@ pos_t team03_iterate(board_t state, int color) {
 
 #if TEAM03_DEBUG
     // Print our status if debugging is on
-    printf(ANSI_GREEN
-           "Our turn! We are %s (%c)\n%d moves available, max time: %lli ms\n\n"
-           ANSI_RESET, color ? "white" : "black", color ? 'O' : 'X', num, team03_maxTime);
+    printf("Our turn! " ANSI_CYAN "We are %s (%c)\n"
+           ANSI_RESET "Found " ANSI_CYAN "%d"
+           ANSI_RESET " moves, max time: "
+           ANSI_RED "%lli ms" ANSI_RESET "\n\n",
+           
+           color ? "white" : "black",
+           color ? 'O' : 'X', num, team03_maxTime);
 #endif
     
     // If we don't have any moves, we shouldn't have gotten a move at all
@@ -233,9 +237,29 @@ pos_t team03_iterate(board_t state, int color) {
     // Track our overall best move & position to return
     pos_t bestPos = moveList[0].pos;
     pos_t retPos = bestPos;
+
+#if TEAM03_DEBUG
+#   define DEPTH_STATUS_MAX 14 // # of layers to display in depth status
+    // Debug search status
+    printf("Search depth:\n ");
+    for (int i = 1; i <= DEPTH_STATUS_MAX; i++) printf(" %-3d", i);
+    printf("\n");
+#endif
     
     // Iteratively deepen the search
     for (int layers = 1; layers <= team03_maxLayers; layers++) {
+#if TEAM03_DEBUG
+        // Print search depth indicator
+        for (int i = 0; i < 2; i++) printf(VT100_CLEAR_LINE " ");
+        for (int i = 1; i <= DEPTH_STATUS_MAX; i++)
+            if (i == layers) {
+                if (i <= 9) printf(ANSI_CYAN "[%-1d] " ANSI_RESET, i);
+                else printf(ANSI_CYAN "[%-2d]" ANSI_RESET, i);
+            } else printf(" %-3d", i);
+        printf("\n  ");
+        for (int i = 1; i < layers; i++) printf("    ");
+        printf(ANSI_CYAN " ▲\n" ANSI_RESET);
+#endif
         
         // Track our best move and alpha/beta for this depth
         int best = -1e9, alpha = -1e9, beta = 1e9;
@@ -254,9 +278,9 @@ pos_t team03_iterate(board_t state, int color) {
 #if TEAM03_DEBUG
                 // Print how much time we've taken
                 long long taken = team03_timeSinceMs(team03_startTime);
-                printf(ANSI_RED
-                       "Timeout at depth ( %d ) after %lli ms.\n"
-                       ANSI_RESET, layers, taken);
+                printf("\rTimeout at depth " ANSI_CYAN "%d" ANSI_RESET
+                       " after " ANSI_RED "%lli ms\n" ANSI_RESET,
+                       layers, taken);
 #endif
                 return retPos;
             }
@@ -1083,4 +1107,4 @@ int team03_popcount(uint64_t num) {
 // Pop our optimization settings
 #ifdef GCC_OPTIM_AVAILABLE
 #   pragma GCC pop_options
-#endif //GCC_OPTIM_AVAILABLE
+#endif // GCC_OPTIM_AVAILABLE
