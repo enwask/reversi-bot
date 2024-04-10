@@ -96,15 +96,6 @@ typedef struct solvePair {
 } solvePair_t;
 #endif // SOLVEPAIR_H
 
-#ifndef TEAM03_IS_POSIX
-/**
- * Portable reimplementation of POSIX timeval
- */
-struct timeval {
-    long tv_sec, tv_usec;
-};
-#endif
-
 
 /*
  **********************

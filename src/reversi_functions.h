@@ -1,1 +1,1 @@
-../framework/reversi_functions.h
+framework/reversi_functions.h
