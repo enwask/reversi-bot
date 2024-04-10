@@ -307,7 +307,7 @@ int play(enum piece ourColor) {
             
             // Update time.
             whiteTime = whiteTime - (endT - startT);
-            printf("Dumbass selected row %d, column %d\n", mymove->x, mymove->y);
+            printf("Opponent selected row %d, column %d\n", mymove->x, mymove->y);
         }
         
         // Execute then free move.
@@ -353,7 +353,7 @@ int play(enum piece ourColor) {
             else printf("They win by %d points.\n", blackScore - whiteScore);
             return 2;
         } else if (whiteScore > blackScore) {
-            if (ourColor == BLACK) printf("We win by %d points.\n", whiteScore - blackScore);
+            if (ourColor == WHITE) printf("We win by %d points.\n", whiteScore - blackScore);
             else printf("They win by %d points.\n", whiteScore - blackScore);
             return 0;
         } else {
