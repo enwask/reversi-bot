@@ -297,7 +297,7 @@ pos_t team03_iterate(board_t state, int color) {
                 if (i <= 9) printf(ANSI_CYAN "[%-1d] " ANSI_RESET, i);
                 else printf(ANSI_CYAN "[%-2d]" ANSI_RESET, i);
             } else printf(" %-3d", i);
-        if (layers > DEPTH_STATUS_MAX) printf(ANSI_CYAN "[%-3d]\n  " ANSI_RESET, layers);
+        if (layers > DEPTH_STATUS_MAX) printf(ANSI_CYAN "[%-2d]\n  " ANSI_RESET, layers);
         else printf(" ...\n  ");
         for (int i = 1; i < ((layers > DEPTH_STATUS_MAX) ? DEPTH_STATUS_MAX + 1 : layers); i++) printf("    ");
         printf(ANSI_CYAN " ▲\n" ANSI_RESET);
