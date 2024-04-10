@@ -12,7 +12,7 @@
  */
 
 // Toggle pretty-printing search status
-#define TEAM03_DEBUG 1
+#define TEAM03_DEBUG 0
 
 // Define escape code macros for debug printing
 #if TEAM03_DEBUG
@@ -46,7 +46,7 @@
 #include <assert.h>
 #include "team03.h"
 
-const int team03_timePadding = 10; // padding (ms) for search timer
+const int team03_timePadding = 20; // padding (ms) for search timer
 const int team03_maxLayers = 24; // max depth of iterative search
 long long team03_maxTime = 5000; // max time (ms) per move; overwritten later
 struct timeval team03_startTime; // start time of the current move
@@ -139,9 +139,9 @@ long long team03_allocateTime(board_t state, int color, int timeLeft) {
     // Calculate number of ms until the next full second
     long long timeToNextSecond = 1000 - (team03_startTime.tv_usec / 1000);
     
-    // If we have <=8 seconds on the clock, or in the first four
+    // If we have <=10 seconds on the clock, or in the first four
     // turns, we only take free moves (count as 0 seconds).
-    if (numPieces <= 11 || timeLeft <= 8) {
+    if (numPieces <= 11 || timeLeft <= 10) {
         long long res = timeToNextSecond - team03_timePadding;
         // ...unless we're forced up against the end of a second, in
         // which case we take 10ms and pray we have time to spare.
