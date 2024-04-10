@@ -130,7 +130,7 @@ void computerVComputer() {
         
         // Black ran out of time.
         if (blackTime < 0) {
-            printf("Sorry, the Black Player ran out of time and loses automatically.\n");
+            printf("We ran out of time and lost automatically.\n");
             blackOutOfTime = TRUE;
             break;
         }
@@ -286,15 +286,15 @@ int play(enum piece ourColor) {
             // Do the move and time it.
             int startT = time(0);
             clock_t clock_start = clock();
-            mymove = team03Move(board, player, blackTime);
+            mymove = team03Move(board, player, ourColor == BLACK ? blackTime : whiteTime);
             clock_t clock_end = clock();
             int endT = time(0);
             long long ms = (1000.0 * (clock_end - clock_start)) / CLOCKS_PER_SEC;
             printf("We took %lld ms (counted as %d s)\n", ms, endT - startT);
-            printf("We have %d seconds remaining\n\n", blackTime - (endT - startT));
             
             // Update time.
-            blackTime = blackTime - (endT - startT);
+            if (ourColor == BLACK) blackTime = blackTime - (endT - startT);
+            else whiteTime = whiteTime - (endT - startT);
             printf("We selected row %d, column %d\n", mymove->x, mymove->y);
         }
             
@@ -303,7 +303,7 @@ int play(enum piece ourColor) {
             
             // Do the move and time it.
             int startT = time(0);
-            mymove = teamnaiveMove(board, player, whiteTime);
+            mymove = teamnaiveMove(board, player, ourColor == WHITE ? blackTime : whiteTime);
             int endT = time(0);
             
             // Update time.
@@ -317,14 +317,16 @@ int play(enum piece ourColor) {
         
         // Black ran out of time.
         if (blackTime < 0) {
-            printf("Sorry, the Black Player ran out of time and loses automatically.\n");
+            if (ourColor == BLACK) printf("We ran out of time and lost automatically.\n");
+            else printf("They ran out of time and lost automatically.\n");
             blackOutOfTime = TRUE;
             break;
         }
         
         // White ran out of time.
         if (whiteTime < 0) {
-            printf("Sorry, the White Player ran out of time and loses automatically.\n");
+            if (ourColor == WHITE) printf("We ran out of time and lost automatically.\n");
+            else printf("They ran out of time and lost automatically.\n");
             whiteOutOfTime = TRUE;
             break;
         }
